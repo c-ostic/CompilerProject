@@ -78,17 +78,43 @@ public class Lexer
     }
 
     //used to keep track of the current state of DFA (see getNextState())
+    //if the state is -1, then no other tokens are possible and
+    //  getNextToken() should not continue looking for a larger token
+    //  (ex. in "print=" the state will be -1 when it reaches the "=")
     private int currentState;
 
     //gets the next token starting from the beginning of the buffer string
     //removes the token from the buffer string
     private Token getNextToken()
     {
+        currentState = 0;
+        TokenType bestType = TokenType.DEFAULT;
+        int endOfBestToken = 0;
+
+        for(int i = 0;i < buffer.length();i++)
+        {
+            TokenType currType = getNextState(buffer.charAt(i));
+
+            //if the current type has a higher precedence (closer to 0), update best
+            if(currType.ordinal() < bestType.ordinal())
+            {
+                bestType = currType;
+                endOfBestToken = i + 1;
+            }
+
+            if(currentState == -1)
+                break;
+        }
+
+        //remove the token from the buffer
+        buffer = buffer.substring(endOfBestToken);
+
         return new Token(TokenType.ID, "test", 0, 0);
     }
 
     //represents the DFA for valid tokens
     //updates the next state and returns the token type that it would be if ending in this state
+    //changes state to -1 if no other tokens are possible
     private TokenType getNextState(char nextChar)
     {
         return TokenType.ERROR;
