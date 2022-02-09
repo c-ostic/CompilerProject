@@ -28,7 +28,8 @@ enum TokenType
 
     //Digits and Characters
     DIGIT,      // 0-9
-    CHAR,       // a-z | *space*
+    CHAR,       // a-z | *spaces in strings*
+    SPACE,      // *spaces/whitespace not in strings*
 
     //Error/Invalid Token
     ERROR,

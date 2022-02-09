@@ -43,7 +43,7 @@ public class Lexer
             {
                 isCommented = false;
             }
-            else if(!isCommented)
+            else if(!isCommented && nextToken.getType() != TokenType.SPACE)
             {
                 //enter or exit quotes
                 if(nextToken.getType() == TokenType.QUOTE)
@@ -95,7 +95,7 @@ public class Lexer
     //used to keep track of the current state of DFA (see getNextState())
     //if the state is -1, then no other tokens are possible and
     //  getNextToken() should not continue looking for a larger token
-    //  (ex. in "print=" the state will be -1 when it reaches the "=")
+    //  (ex. in "pri=" the state will be -1 when it reaches the "=")
     private int currentState;
 
     //gets the next token starting from the beginning of the buffer string
