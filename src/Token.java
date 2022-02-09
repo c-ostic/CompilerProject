@@ -14,6 +14,7 @@ enum TokenType
     INEQUALITY,
     ADDITION,
     EOP,
+    ERROR,
 
     //Tokens that have multiple possible values
     VAR_TYPE,
