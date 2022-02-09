@@ -35,22 +35,37 @@ public class Lexer
             //get the next token and remove the token from the buffer
             Token nextToken = getNextToken();
 
-            if(nextToken.getType() == TokenType.ERROR)
+            if(nextToken.getType() == TokenType.L_COMMENT)
             {
-                //if there is an error, report it, and move on
-                hasError = true;
-                //TODO: print some error message
+                isCommented = true;
             }
-            else
+            else if(nextToken.getType() == TokenType.R_COMMENT)
             {
-                //if there isn't an error, add the token to the list
-                currProgram.add(nextToken);
-                //TODO: print out token
+                isCommented = false;
             }
+            else if(!isCommented)
+            {
+                //enter or exit quotes
+                if(nextToken.getType() == TokenType.QUOTE)
+                    isQuoted = !isQuoted;
 
-            //if the token is an end of program token, break out of the loop
-            if(nextToken.getType() == TokenType.EOP)
-                break;
+                if (nextToken.getType() == TokenType.ERROR)
+                {
+                    //if there is an error, report it, and move on
+                    hasError = true;
+                    //TODO: print some error message
+                }
+                else
+                {
+                    //if there isn't an error, add the token to the list
+                    currProgram.add(nextToken);
+                    //TODO: print out token
+                }
+
+                //if the token is an end of program token, break out of the loop
+                if (nextToken.getType() == TokenType.EOP)
+                    break;
+            }
 
             //fill the buffer if it is empty and there is still more to scan
             if(buffer.length() == 0 && scan.hasNext())
@@ -60,7 +75,7 @@ public class Lexer
         //print any applicable warnings
         if(currProgram.size() != 0 && currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
         {
-            //TODO: print a warning that an end of file is missing
+            //TODO: print a warning that an end of program is missing
         }
 
         if(isCommented)
