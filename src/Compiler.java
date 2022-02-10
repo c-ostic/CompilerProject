@@ -1,12 +1,26 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.Scanner;
+
 public class Compiler
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws FileNotFoundException
     {
-        System.out.println("Hello World!");
+        Scanner scan = new Scanner(new File(args[0]));
 
-        Test.test();
+        Lexer lexer = new Lexer(scan);
+        List<Token> tokens;
 
-        if(args.length > 0)
-            System.out.println(args[0]);
+        while(lexer.hasNextProgram())
+        {
+            tokens = lexer.getNextProgram();
+            System.out.println();
+
+            for(Token token : tokens)
+                System.out.println(token.getValue());
+
+            System.out.println();
+        }
     }
 }

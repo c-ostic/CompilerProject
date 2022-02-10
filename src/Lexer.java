@@ -146,7 +146,7 @@ public class Lexer
         }
 
         //remove the token from the buffer
-        String token = buffer.substring(0, endOfBestToken-1);
+        String token = buffer.substring(0, endOfBestToken);
         buffer = buffer.substring(endOfBestToken);
 
         //TODO: get line numbers and column numbers
@@ -216,19 +216,26 @@ public class Lexer
                         type = TokenType.QUOTE;
                         break;
                     }
+                    case '$':
+                    {
+                        currentState = -1;
+                        type = TokenType.EOP;
+                        break;
+                    }
                     case '+':
                     {
                         currentState = -1;
                         type = TokenType.ADDITION;
                         break;
                     }
-                    case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                     {
                         currentState = -1;
                         type = TokenType.DIGIT;
                         break;
                     }
-                    case 'a', 'c', 'd', 'e', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'o', 'q', 'r', 'u', 'v', 'x', 'y', 'z':
+                    case 'a': case 'c': case 'd': case 'e': case 'g': case 'h': case 'j': case 'k': case 'l': case 'm':
+                    case 'n': case 'o': case 'q': case 'r': case 'u': case 'v': case 'x': case 'y': case 'z':
                     {
                         currentState = -1;
                         if (isQuoted)
@@ -277,7 +284,7 @@ public class Lexer
                         }
                         break;
                     }
-                    case '\t', '\n', '\r':
+                    case '\t': case '\n': case '\r':
                     {
                         currentState = 5; //beginning of a series of whitespace
                         type = TokenType.ID;
