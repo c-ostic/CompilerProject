@@ -17,10 +17,8 @@ public class Compiler
             tokens = lexer.getNextProgram();
             System.out.println();
 
-            for(Token token : tokens)
-                System.out.println(token.getValue());
-
-            System.out.println();
+            //for(Token token : tokens)
+                //System.out.println(token.getValue());
         }
     }
 }

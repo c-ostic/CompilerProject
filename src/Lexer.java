@@ -7,15 +7,21 @@ public class Lexer
     //The scanner that Lexer will use to get input
     //Provided by the main class
     private Scanner scan;
-    private boolean hasError; //true if the last program read had an error
+    private int errors; //>0 if the last program read had an error
     private boolean isQuoted;
     private boolean isCommented;
     private String buffer;
+    private int currLine;
+    private int currCol;
+
+    private static int programCount = -1; //starts at -1 so it can be incremented to 0 when the first program is read
 
     public Lexer(Scanner inputScanner)
     {
         scan = inputScanner;
         buffer = "";
+        currLine = 1;
+        currCol = 1;
     }
 
     //Returns true if there is another program to be read,
@@ -28,7 +34,7 @@ public class Lexer
     //Returns true if the last program read had an error, false otherwise
     public boolean hasError()
     {
-        return hasError;
+        return errors > 0;
     }
 
     //Returns the list of tokens of the next readable program
@@ -36,20 +42,24 @@ public class Lexer
     //Returns null if the program had an error
     public List<Token> getNextProgram()
     {
-        //TODO: add program counter
-        System.out.println("INFO Lexer - Lexing Program");
+        errors = 0;
+        programCount++;
+
+        System.out.println("INFO Lexer - Lexing Program " + programCount);
 
         //holds the tokens for the current program being tokenized
         List<Token> currProgram = new LinkedList<Token>();
 
         //if the buffer is empty, get the next string
         if(buffer.length() == 0)
-            buffer = scan.next();
+            buffer = scan.nextLine();
 
         while(!buffer.isEmpty())
         {
             //get the next token and remove the token from the buffer
             Token nextToken = getNextToken();
+
+            currCol += nextToken.getValue().length();
 
             if(nextToken.getType() == TokenType.L_COMMENT)
             {
@@ -68,7 +78,7 @@ public class Lexer
                 if (nextToken.getType() == TokenType.ERROR)
                 {
                     //if there is an error, report it, and move on
-                    hasError = true;
+                    errors++;
                     System.out.println("ERROR Lexer - Unrecognized Token: " + nextToken);
                 }
                 else
@@ -84,28 +94,34 @@ public class Lexer
             }
 
             //fill the buffer if it is empty and there is still more to scan
-            if(buffer.length() == 0 && scan.hasNext())
-                buffer = scan.next();
+            if(buffer.isEmpty() && scan.hasNext())
+            {
+                buffer = scan.nextLine();
+                currCol = 1;
+                currLine++;
+            }
         }
 
         //print any applicable warnings
         if(currProgram.size() != 0 && currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
         {
-            //TODO: print a warning that an end of program is missing
+            System.out.println("WARN Lexer - Program ended without '$'");
         }
 
         if(isCommented)
         {
-            //TODO: print a warning that there is an unmatched comment
+            //TODO: add line number
+            System.out.println("WARN Lexer - Unmatched comment on line");
         }
 
         if(isQuoted)
         {
-            //TODO: print a warning that there is an unmatched quote
+            //TODO: add line number
+            System.out.println("WARN Lexer - Unmatched quote on line");
         }
 
-        if(hasError)
-            System.out.println("ERROR Lexer - Lex failed with errors");
+        if(errors > 0)
+            System.out.println("ERROR Lexer - Lex failed with " + errors + " errors");
         else
             System.out.println("INFO Lexer - Lex completed with 0 errors");
 
@@ -149,8 +165,7 @@ public class Lexer
         String token = buffer.substring(0, endOfBestToken);
         buffer = buffer.substring(endOfBestToken);
 
-        //TODO: get line numbers and column numbers
-        return new Token(bestType, token, 0, 0);
+        return new Token(bestType, token, currLine, currCol);
     }
 
     //represents the DFA for valid tokens
@@ -280,14 +295,8 @@ public class Lexer
                         else
                         {
                             currentState = 5; //beginning of a series of whitespace
-                            type = TokenType.ID;
+                            type = TokenType.SPACE;
                         }
-                        break;
-                    }
-                    case '\t': case '\n': case '\r':
-                    {
-                        currentState = 5; //beginning of a series of whitespace
-                        type = TokenType.ID;
                         break;
                     }
                     case 'p':
@@ -390,8 +399,17 @@ public class Lexer
                     }
                     default:
                     {
-                        currentState = -1;
-                        type = TokenType.ERROR;
+                        //catch any whitespace character other than ' '
+                        if((currToken.charAt(currToken.length()-1)+"").matches("\\s"))
+                        {
+                            currentState = 5; //beginning of a series of whitespace
+                            type = TokenType.SPACE;
+                        }
+                        else
+                        {
+                            currentState = -1;
+                            type = TokenType.ERROR;
+                        }
                         break;
                     }
                 }
