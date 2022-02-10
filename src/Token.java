@@ -73,4 +73,9 @@ public class Token
     {
         return column;
     }
+
+    public String toString()
+    {
+        return type.name() + " [ " + value + " ] found at (" + line + ":" + column + ")";
+    }
 }

@@ -36,6 +36,9 @@ public class Lexer
     //Returns null if the program had an error
     public List<Token> getNextProgram()
     {
+        //TODO: add program counter
+        System.out.println("INFO Lexer - Lexing Program");
+
         //holds the tokens for the current program being tokenized
         List<Token> currProgram = new LinkedList<Token>();
 
@@ -66,13 +69,13 @@ public class Lexer
                 {
                     //if there is an error, report it, and move on
                     hasError = true;
-                    //TODO: print some error message
+                    System.out.println("ERROR Lexer - Unrecognized Token: " + nextToken);
                 }
                 else
                 {
                     //if there isn't an error, add the token to the list
                     currProgram.add(nextToken);
-                    //TODO: print out token
+                    System.out.println("DEBUG Lexer - " + nextToken);
                 }
 
                 //if the token is an end of program token, break out of the loop
@@ -100,6 +103,11 @@ public class Lexer
         {
             //TODO: print a warning that there is an unmatched quote
         }
+
+        if(hasError)
+            System.out.println("ERROR Lexer - Lex failed with errors");
+        else
+            System.out.println("INFO Lexer - Lex completed with 0 errors");
 
         //return the tokens
         return currProgram;
