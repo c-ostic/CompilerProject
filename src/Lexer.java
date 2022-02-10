@@ -18,6 +18,19 @@ public class Lexer
         buffer = "";
     }
 
+    //Returns true if there is another program to be read,
+    //  false if the end of file has been reached
+    public boolean hasNextProgram()
+    {
+        return scan.hasNext();
+    }
+
+    //Returns true if the last program read had an error, false otherwise
+    public boolean hasError()
+    {
+        return hasError;
+    }
+
     //Returns the list of tokens of the next readable program
     //Returns empty if there are no more programs
     //Returns null if the program had an error
@@ -92,10 +105,13 @@ public class Lexer
         return currProgram;
     }
 
-    //used to keep track of the current state of DFA (see getNextState())
-    //if the state is -1, then no other tokens are possible and
-    //  getNextToken() should not continue looking for a larger token
-    //  (ex. in "pri=" the state will be -1 when it reaches the "=")
+    /*
+    used to keep track of the current state of DFA (see getNextState())
+    if the state is -1, then no other tokens are possible and
+      getNextToken() should not continue looking for a larger token
+      (ex. in "pri=" the state will be -1 when it reaches the "=")
+      (ex. in "apple" the state will be -1 when it reaches "a" since no longer token starts with "a")
+    */
     private int currentState;
 
     //gets the next token starting from the beginning of the buffer string
@@ -108,7 +124,7 @@ public class Lexer
 
         for(int i = 0;i < buffer.length();i++)
         {
-            TokenType currType = getNextState(buffer.charAt(i));
+            TokenType currType = getNextState(buffer.substring(0,i+1));
 
             //if the current type has a higher precedence (closer to 0), update best
             if(currType.ordinal() < bestType.ordinal())
@@ -122,29 +138,433 @@ public class Lexer
         }
 
         //remove the token from the buffer
+        String token = buffer.substring(0, endOfBestToken-1);
         buffer = buffer.substring(endOfBestToken);
 
-        return new Token(TokenType.ID, "test", 0, 0);
+        //TODO: get line numbers and column numbers
+        return new Token(bestType, token, 0, 0);
     }
 
     //represents the DFA for valid tokens
     //updates the next state and returns the token type that it would be if ending in this state
     //changes state to -1 if no other tokens are possible
-    private TokenType getNextState(char nextChar)
+    private TokenType getNextState(String currToken)
     {
-        return TokenType.ERROR;
-    }
+        TokenType type = TokenType.DEFAULT;
 
-    //Returns true if there is another program to be read,
-    //  false if the end of file has been reached
-    public boolean hasNextProgram()
-    {
-        return scan.hasNext();
-    }
+        /*
+        States:
+        -1: end state
+         0: start state
+         1: equality state
+         2: inequality state
+         3: start_comment state
+         4: end_comment state
+         5: spaces state (accepts any and all whitespace not in a string)
+         6: "print" state
+         10: "while" state
+         16: "if/int" state
+         17: "int" state
+         18: "string" state
+         23: "boolean" state
+         29: "false" state
+         33: "true" state
+        */
 
-    //Returns true if the last program read had an error, false otherwise
-    public boolean hasError()
-    {
-        return hasError;
+        switch (currentState)
+        {
+            case 0: // Start state
+            {
+                switch (currToken.charAt(currToken.length()-1))
+                {
+                    // The following cases are characters that are only part of single character tokens (hence current state is changed to -1)
+                    case '{':
+                    {
+                        currentState = -1;
+                        type = TokenType.L_BRACE;
+                        break;
+                    }
+                    case '}':
+                    {
+                        currentState = -1;
+                        type = TokenType.R_BRACE;
+                        break;
+                    }
+                    case '(':
+                    {
+                        currentState = -1;
+                        type = TokenType.L_PAREN;
+                        break;
+                    }
+                    case ')':
+                    {
+                        currentState = -1;
+                        type = TokenType.R_PAREN;
+                        break;
+                    }
+                    case '\"':
+                    {
+                        currentState = -1;
+                        type = TokenType.QUOTE;
+                        break;
+                    }
+                    case '+':
+                    {
+                        currentState = -1;
+                        type = TokenType.ADDITION;
+                        break;
+                    }
+                    case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+                    {
+                        currentState = -1;
+                        type = TokenType.DIGIT;
+                        break;
+                    }
+                    case 'a', 'c', 'd', 'e', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'o', 'q', 'r', 'u', 'v', 'x', 'y', 'z':
+                    {
+                        currentState = -1;
+                        if (isQuoted)
+                            type = TokenType.CHAR;
+                        else
+                            type = TokenType.ID;
+                        break;
+                    }
+
+                    // The next cases are characters that may start multi-character tokens
+                    case '=':
+                    {
+                        currentState = 1; //beginning of equality
+                        type = TokenType.ASSIGN;
+                        break;
+                    }
+                    case '!':
+                    {
+                        currentState = 2; //beginning of inequality
+                        type = TokenType.ERROR;
+                        break;
+                    }
+                    case '/':
+                    {
+                        currentState = 3; //beginning of start comment
+                        type = TokenType.ERROR;
+                        break;
+                    }
+                    case '*':
+                    {
+                        currentState = 4; //beginning of end comment
+                        type = TokenType.ERROR;
+                        break;
+                    }
+                    case ' ':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 5; //beginning of a series of whitespace
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case '\t', '\n', '\r':
+                    {
+                        currentState = 5; //beginning of a series of whitespace
+                        type = TokenType.ID;
+                        break;
+                    }
+                    case 'p':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 6; //beginning "p" of "print"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case 'w':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 10; //beginning "w" of "while"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case 'i':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 16; //beginning "i" of "if" or "int"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case 's':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 18; //beginning "s" of "string"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case 'b':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 23; //beginning "b" of "boolean"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case 'f':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 29; //beginning "f" of "false"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    case 't':
+                    {
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.CHAR;
+                        }
+                        else
+                        {
+                            currentState = 33; //beginning "t" of "true"
+                            type = TokenType.ID;
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        currentState = -1;
+                        type = TokenType.ERROR;
+                        break;
+                    }
+                }
+                break;
+            }// End case 0
+
+            case 1: // Equality state
+            {
+                currentState = -1;
+                if(currToken.equals("=="))
+                    type = TokenType.EQUALITY;
+                else
+                    type = TokenType.ERROR;
+                break;
+            }
+            case 2: // Inequality state
+            {
+                currentState = -1;
+                if(currToken.equals("!="))
+                    type = TokenType.INEQUALITY;
+                else
+                    type = TokenType.ERROR;
+                break;
+            }
+            case 3: // Start comment state
+            {
+                currentState = -1;
+                if(currToken.equals("/*"))
+                    type = TokenType.L_COMMENT;
+                else
+                    type = TokenType.ERROR;
+                break;
+            }
+            case 4: // End comment state
+            {
+                currentState = -1;
+                if(currToken.equals("*/"))
+                    type = TokenType.R_COMMENT;
+                else
+                    type = TokenType.ERROR;
+                break;
+            }
+            case 5: // Spaces state
+            {
+                if(currToken.matches("\\s"))
+                {
+                    //no change to state, so it returns here next time through
+                    type = TokenType.SPACE;
+                }
+                else
+                {
+                    currentState = -1;
+                    type = TokenType.ERROR;
+                }
+                break;
+            }
+            case 6: // "print" state
+            {
+                if(currToken.equals("print"))
+                {
+                    currentState = -1;
+                    type = TokenType.PRINT_KEY;
+                }
+                else
+                {
+                    //if the token is not a prefix of print (i.e. "pr","prin", etc.), set the state to -1
+                    //otherwise, no change to state, so it will return here
+                    type = TokenType.ERROR;
+                    if(!("print".startsWith(currToken)))
+                        currentState = -1;
+                }
+                break;
+            }
+            case 10: // "while" state
+            {
+                if(currToken.equals("while"))
+                {
+                    currentState = -1;
+                    type = TokenType.WHILE_KEY;
+                }
+                else
+                {
+                    //if the token is not a prefix of while, set the state to -1
+                    //otherwise, no change to state, so it will return here
+                    type = TokenType.ERROR;
+                    if(!("while".startsWith(currToken)))
+                        currentState = -1;
+                }
+                break;
+            }
+            case 16: // "if" or "in" in "int" state
+            {
+                if(currToken.equals("if"))
+                {
+                    currentState = -1;
+                    type = TokenType.IF_KEY;
+                }
+                else if(currToken.equals("in")) // prefix of "int"
+                {
+                    currentState = 17;
+                    type = TokenType.ERROR;
+                }
+                else
+                {
+                    currentState = -1;
+                    type = TokenType.ERROR;
+                }
+                break;
+            }
+            case 17: // "int" state
+            {
+                currentState = -1;
+                if(currToken.equals("int")) // at this point, the token is "int" or an invalid token
+                    type = TokenType.VAR_TYPE;
+                else
+                    type = TokenType.ERROR;
+                break;
+            }
+            case 18: // "string" state
+            {
+                if(currToken.equals("string"))
+                {
+                    currentState = -1;
+                    type = TokenType.VAR_TYPE;
+                }
+                else
+                {
+                    //if the token is not a prefix of string, set the state to -1
+                    //otherwise, no change to state, so it will return here
+                    type = TokenType.ERROR;
+                    if(!("string".startsWith(currToken)))
+                        currentState = -1;
+                }
+                break;
+            }
+            case 23: // "boolean" state
+            {
+                if(currToken.equals("boolean"))
+                {
+                    currentState = -1;
+                    type = TokenType.VAR_TYPE;
+                }
+                else
+                {
+                    //if the token is not a prefix of boolean, set the state to -1
+                    //otherwise, no change to state, so it will return here
+                    type = TokenType.ERROR;
+                    if(!("boolean".startsWith(currToken)))
+                        currentState = -1;
+                }
+                break;
+            }
+            case 29: // "false" state
+            {
+                if(currToken.equals("false"))
+                {
+                    currentState = -1;
+                    type = TokenType.BOOL_VAL;
+                }
+                else
+                {
+                    //if the token is not a prefix of false, set the state to -1
+                    //otherwise, no change to state, so it will return here
+                    type = TokenType.ERROR;
+                    if(!("false".startsWith(currToken)))
+                        currentState = -1;
+                }
+                break;
+            }
+            case 33: // "true" state
+            {
+                if(currToken.equals("true"))
+                {
+                    currentState = -1;
+                    type = TokenType.BOOL_VAL;
+                }
+                else
+                {
+                    //if the token is not a prefix of true, set the state to -1
+                    //otherwise, no change to state, so it will return here
+                    type = TokenType.ERROR;
+                    if(!("true".startsWith(currToken)))
+                        currentState = -1;
+                }
+                break;
+            }
+        }
+
+        return type;
     }
 }
