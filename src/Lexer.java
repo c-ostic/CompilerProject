@@ -116,7 +116,7 @@ public class Lexer
                 currCol = 1;
                 currLine++;
             }
-        }
+        } //end while
 
         //print any applicable warnings
         if(currProgram.size() != 0 && currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
