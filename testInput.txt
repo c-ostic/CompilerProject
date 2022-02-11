@@ -1,9 +1,0 @@
-{
-test
-comment*/
-  int a
-  a = a
-  string "b"
-  a = b
-}$
-"b${%&}$$

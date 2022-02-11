@@ -57,7 +57,7 @@ public class Lexer
         List<Token> currProgram = new LinkedList<Token>();
 
         //if the buffer is empty, get the next string
-        if(buffer.length() == 0)
+        while((buffer.isEmpty() || buffer.matches("\\s*")) && scan.hasNext())
         {
             buffer = scan.nextLine();
             currCol = 1;
@@ -111,7 +111,7 @@ public class Lexer
             }
 
             //fill the buffer if it is empty and there is still more to scan
-            if(buffer.isEmpty() && scan.hasNext())
+            while((buffer.isEmpty() || buffer.matches("\\s*")) && scan.hasNext())
             {
                 //if the end of the line is reached with an unterminated string, log an error
                 if(isQuoted)
@@ -135,7 +135,7 @@ public class Lexer
 
         if(isCommented)
         {
-            System.out.println("WARN Lexer - Unmatched comment at (" + lastOpenComment.getLineNumber() + ":" + lastOpenComment.getColumnNumber() + ")");
+            System.out.println("WARN Lexer - Unterminated comment at (" + lastOpenComment.getLineNumber() + ":" + lastOpenComment.getColumnNumber() + ")");
         }
 
         if(isQuoted)
@@ -306,7 +306,10 @@ public class Lexer
                     }
                     case '*':
                     {
-                        currentState = 4; //beginning of end comment
+                        if(isCommented)
+                            currentState = 4; //beginning of end comment if the code is currently commented
+                        else
+                            currentState = -1; //otherwise, this is just an invalid token
                         type = TokenType.ERROR;
                         break;
                     }

@@ -1,0 +1,37 @@
+/* Comment Test */
+{
+    /* Single line comment */
+    int a = 0
+}$
+
+{
+    /* multi
+    line
+    comment */
+    int a = 1
+}$
+
+{
+    no comment start (bad) */
+    int a = 2
+}$
+
+{
+    /* multi
+    line
+    comment
+    with symbols (should be ignored)
+    $ { ( } )
+    */
+    int a = 3
+}$
+
+{
+    /* unterminated comment
+    int a = 4
+}$
+
+{
+    this whole program is ignored due to unterminated comment
+    int a = 5
+}$
