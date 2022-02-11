@@ -14,8 +14,9 @@ public class Lexer
     private int currLine;
     private int currCol;
 
-    //keeps track of the last quotation in case of unterminated string
-    private int lastQuoteLoc;
+    //keeps track of the last quotation/comment in case of unterminated string/comment
+    private Token lastQuote;
+    private Token lastOpenComment;
 
     private static int programCount = -1; //starts at -1 so it can be incremented to 0 when the first program is read
 
@@ -23,6 +24,8 @@ public class Lexer
     {
         scan = inputScanner;
         buffer = "";
+        currLine = 0;
+        currCol = 0;
     }
 
     //Returns true if there is another program to be read,
@@ -46,8 +49,6 @@ public class Lexer
         //reset/update variables
         errors = 0;
         programCount++;
-        currLine = 1;
-        currCol = 1;
         isQuoted = false;
 
         System.out.println("INFO Lexer - Lexing Program " + programCount);
@@ -57,30 +58,38 @@ public class Lexer
 
         //if the buffer is empty, get the next string
         if(buffer.length() == 0)
+        {
             buffer = scan.nextLine();
+            currCol = 1;
+            currLine++;
+        }
 
         while(!buffer.isEmpty())
         {
             //get the next token and remove the token from the buffer
             Token nextToken = getNextToken();
 
+            //update the current column
             currCol += nextToken.getValue().length();
 
+            //check first to see if there are open or close comments
             if(nextToken.getType() == TokenType.L_COMMENT)
             {
                 isCommented = true;
+                lastOpenComment = nextToken;
             }
             else if(nextToken.getType() == TokenType.R_COMMENT)
             {
                 isCommented = false;
             }
+            //if the code is currently not commented and the token is not whitespace, process the token
             else if(!isCommented && nextToken.getType() != TokenType.SPACE)
             {
                 //enter or exit quotes
                 if(nextToken.getType() == TokenType.QUOTE)
                 {
                     isQuoted = !isQuoted;
-                    lastQuoteLoc = currCol-1;
+                    lastQuote = nextToken;
                 }
 
                 if (nextToken.getType() == TokenType.ERROR)
@@ -107,7 +116,7 @@ public class Lexer
                 //if the end of the line is reached with an unterminated string, log an error
                 if(isQuoted)
                 {
-                    System.out.println("ERROR Lexer - Unterminated string at (" + currLine + ":" + lastQuoteLoc + ") ");
+                    System.out.println("ERROR Lexer - Unterminated string at (" + lastQuote.getLineNumber() + ":" + lastQuote.getColumnNumber() + ") ");
                     errors++;
                     isQuoted = false;
                 }
@@ -118,7 +127,7 @@ public class Lexer
             }
         } //end while
 
-        //print any applicable warnings
+        //print any applicable warnings and errors
         if(currProgram.size() != 0 && currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
         {
             System.out.println("WARN Lexer - Program ended without '$'");
@@ -126,13 +135,12 @@ public class Lexer
 
         if(isCommented)
         {
-            //TODO: add line number
-            System.out.println("WARN Lexer - Unmatched comment on line");
+            System.out.println("WARN Lexer - Unmatched comment at (" + lastOpenComment.getLineNumber() + ":" + lastOpenComment.getColumnNumber() + ")");
         }
 
         if(isQuoted)
         {
-            System.out.println("ERROR Lexer - Unterminated string at (" + currLine + ":" + lastQuoteLoc + ") ");
+            System.out.println("ERROR Lexer - Unterminated string at (" + lastQuote.getLineNumber() + ":" + lastQuote.getColumnNumber() + ") ");
             errors++;
             isQuoted = false;
         }
