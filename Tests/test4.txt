@@ -1,0 +1,46 @@
+/*
+Keyword tests
+Each program has a partial keyword, the full keyword, and a misspelling
+The partial and misspelling should be tokenized as IDs
+*/
+{
+    pri
+    print
+    pirnt
+}$
+
+{
+    i
+    if
+    fi
+}$
+
+{
+    in
+    int
+    itn
+}$
+
+{
+    whi
+    while
+    wilhe
+}$
+
+{
+    str
+    string
+    stirgn
+}$
+
+{
+    tr
+    true
+    ture
+}$
+
+{
+    fa
+    false
+    flaes
+}$
