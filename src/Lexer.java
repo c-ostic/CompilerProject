@@ -14,21 +14,22 @@ public class Lexer
     private int currLine;
     private int currCol;
 
+    //keeps track of the last quotation in case of unterminated string
+    private int lastQuoteLoc;
+
     private static int programCount = -1; //starts at -1 so it can be incremented to 0 when the first program is read
 
     public Lexer(Scanner inputScanner)
     {
         scan = inputScanner;
         buffer = "";
-        currLine = 1;
-        currCol = 1;
     }
 
     //Returns true if there is another program to be read,
     //  false if the end of file has been reached
     public boolean hasNextProgram()
     {
-        return scan.hasNext();
+        return !buffer.isEmpty() || scan.hasNext();
     }
 
     //Returns true if the last program read had an error, false otherwise
@@ -42,8 +43,12 @@ public class Lexer
     //Returns null if the program had an error
     public List<Token> getNextProgram()
     {
+        //reset/update variables
         errors = 0;
         programCount++;
+        currLine = 1;
+        currCol = 1;
+        isQuoted = false;
 
         System.out.println("INFO Lexer - Lexing Program " + programCount);
 
@@ -73,7 +78,10 @@ public class Lexer
             {
                 //enter or exit quotes
                 if(nextToken.getType() == TokenType.QUOTE)
+                {
                     isQuoted = !isQuoted;
+                    lastQuoteLoc = currCol-1;
+                }
 
                 if (nextToken.getType() == TokenType.ERROR)
                 {
@@ -96,6 +104,14 @@ public class Lexer
             //fill the buffer if it is empty and there is still more to scan
             if(buffer.isEmpty() && scan.hasNext())
             {
+                //if the end of the line is reached with an unterminated string, log an error
+                if(isQuoted)
+                {
+                    System.out.println("ERROR Lexer - Unterminated string at (" + currLine + ":" + lastQuoteLoc + ") ");
+                    errors++;
+                    isQuoted = false;
+                }
+
                 buffer = scan.nextLine();
                 currCol = 1;
                 currLine++;
@@ -116,8 +132,9 @@ public class Lexer
 
         if(isQuoted)
         {
-            //TODO: add line number
-            System.out.println("WARN Lexer - Unmatched quote on line");
+            System.out.println("ERROR Lexer - Unterminated string at (" + currLine + ":" + lastQuoteLoc + ") ");
+            errors++;
+            isQuoted = false;
         }
 
         if(errors > 0)

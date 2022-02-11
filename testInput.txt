@@ -1,7 +1,7 @@
 {
   int a
   a = a
-  string b
+  string "b
   a = b
 }$
-{%&}$
+"b${%&}$
