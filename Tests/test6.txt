@@ -1,0 +1,37 @@
+/* Errors and other wrong things */
+{
+    !
+    &^/
+    * ; /* invalid characters */
+}$
+
+{
+    int num = 10
+    /* num will be three separate variables
+    10 will be two separate digits
+    but this will have no errors */
+}$
+
+{
+    string b = "test
+    int a = b
+
+    if(b == "test2) a = b
+    /* unterminated string only affects until end of line
+    invalid characters in string are left for parse to figure out*/
+}$
+
+{ string c = "test3}${a = a+1}$
+/* unterminated strings won't leak into the next program even if they are on the same line */
+
+{
+    int A
+    boolean FLAG
+    string c = "TEST"
+    /* Capitals anywhere but comments are errors */
+}$
+
+{
+    string c = "print"
+    /* not an error, but keywords in strings are tokenized as characters not keywords */
+}$
