@@ -5,20 +5,25 @@ import java.util.Scanner;
 
 public class Compiler
 {
-    public static void main(String[] args) throws FileNotFoundException
+    public static void main(String[] args)
     {
-        Scanner scan = new Scanner(new File(args[0]));
-
-        Lexer lexer = new Lexer(scan);
-        List<Token> tokens;
-
-        while(lexer.hasNextProgram())
+        try
         {
-            tokens = lexer.getNextProgram();
-            System.out.println();
+            Scanner scan = new Scanner(new File(args[0]));
 
-            //for(Token token : tokens)
-                //System.out.println(token.getValue());
+            Lexer lexer = new Lexer(scan);
+            List<Token> tokens;
+
+            while (lexer.hasNextProgram())
+            {
+                tokens = lexer.getNextProgram();
+                System.out.println();
+            }
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File not found. Make sure the test file is in the same directory as the class file" +
+                    " or is has a relative path from that directory");
         }
     }
 }

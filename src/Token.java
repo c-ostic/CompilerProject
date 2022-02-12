@@ -39,6 +39,10 @@ enum TokenType
 
 }
 
+/*
+Represents a single Token
+Has a type (the enum above), its value, and its location in terms of line and column numbers
+ */
 public class Token
 {
     private final TokenType type;
@@ -54,6 +58,7 @@ public class Token
         column = colNumber;
     }
 
+    //getters and setters
     public TokenType getType()
     {
         return type;
@@ -74,6 +79,7 @@ public class Token
         return column;
     }
 
+    //toString shows all bits of information in the Token
     public String toString()
     {
         return type.name() + " [ " + value + " ] found at (" + line + ":" + column + ")";
