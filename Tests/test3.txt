@@ -1,0 +1,11 @@
+$ /* Empty and whitespace programs. None should fail */ $$
+$
+
+
+
+
+                $
+$
+
+/* here is a program without an ending $ as well */
+{}

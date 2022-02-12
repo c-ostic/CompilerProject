@@ -1,12 +1,29 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.Scanner;
+
 public class Compiler
 {
     public static void main(String[] args)
     {
-        System.out.println("Hello World!");
+        try
+        {
+            Scanner scan = new Scanner(new File(args[0]));
 
-        Test.test();
+            Lexer lexer = new Lexer(scan);
+            List<Token> tokens;
 
-        if(args.length > 0)
-            System.out.println(args[0]);
+            while (lexer.hasNextProgram())
+            {
+                tokens = lexer.getNextProgram();
+                System.out.println();
+            }
+        }
+        catch(FileNotFoundException e)
+        {
+            System.out.println("File not found. Make sure the test file is in the same directory as the class file" +
+                    " or is has a relative path from that directory");
+        }
     }
 }
