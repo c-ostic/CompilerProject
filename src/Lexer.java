@@ -96,7 +96,11 @@ public class Lexer
                 {
                     //if there is an error, report it, and move on
                     errors++;
-                    System.out.println("ERROR Lexer - Unrecognized Token: " + nextToken);
+
+                    if(isQuoted)
+                        System.out.println("ERROR Lexer - Unexpected char in string: " + nextToken);
+                    else
+                        System.out.println("ERROR Lexer - Unrecognized Token: " + nextToken);
                 }
                 else
                 {
@@ -229,25 +233,37 @@ public class Lexer
                     case '{':
                     {
                         currentState = -1;
-                        type = TokenType.L_BRACE;
+                        if (isQuoted)
+                            type = TokenType.ERROR;
+                        else
+                            type = TokenType.L_BRACE;
                         break;
                     }
                     case '}':
                     {
                         currentState = -1;
-                        type = TokenType.R_BRACE;
+                        if (isQuoted)
+                            type = TokenType.ERROR;
+                        else
+                            type = TokenType.R_BRACE;
                         break;
                     }
                     case '(':
                     {
                         currentState = -1;
-                        type = TokenType.L_PAREN;
+                        if (isQuoted)
+                            type = TokenType.ERROR;
+                        else
+                            type = TokenType.L_PAREN;
                         break;
                     }
                     case ')':
                     {
                         currentState = -1;
-                        type = TokenType.R_PAREN;
+                        if (isQuoted)
+                            type = TokenType.ERROR;
+                        else
+                            type = TokenType.R_PAREN;
                         break;
                     }
                     case '\"':
@@ -265,13 +281,19 @@ public class Lexer
                     case '+':
                     {
                         currentState = -1;
-                        type = TokenType.ADDITION;
+                        if (isQuoted)
+                            type = TokenType.ERROR;
+                        else
+                            type = TokenType.ADDITION;
                         break;
                     }
                     case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                     {
                         currentState = -1;
-                        type = TokenType.DIGIT;
+                        if (isQuoted)
+                            type = TokenType.ERROR;
+                        else
+                            type = TokenType.DIGIT;
                         break;
                     }
                     case 'a': case 'c': case 'd': case 'e': case 'g': case 'h': case 'j': case 'k': case 'l': case 'm':
@@ -288,13 +310,24 @@ public class Lexer
                     // The next cases are characters that may start multi-character tokens
                     case '=':
                     {
-                        currentState = 1; //beginning of equality
-                        type = TokenType.ASSIGN;
+                        if (isQuoted)
+                        {
+                            currentState = -1;
+                            type = TokenType.ERROR;
+                        }
+                        else
+                        {
+                            currentState = 1; //beginning of equality
+                            type = TokenType.ASSIGN;
+                        }
                         break;
                     }
                     case '!':
                     {
-                        currentState = 2; //beginning of inequality
+                        if(isQuoted)
+                            currentState = -1;
+                        else
+                            currentState = 2; //beginning of inequality
                         type = TokenType.ERROR;
                         break;
                     }

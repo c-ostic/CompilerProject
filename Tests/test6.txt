@@ -16,9 +16,8 @@
     string b = "test
     int a = b
 
-    if(b == "test2) a = b
-    /* unterminated string only affects until end of line
-    invalid characters in string are left for parse to figure out*/
+    if(b == "test) a = b
+    /* unterminated string only affects until end of line*/
 }$
 
 { string c = "test3}${a = a+1}$
@@ -35,3 +34,20 @@
     string c = "print"
     /* not an error, but keywords in strings are tokenized as characters not keywords */
 }$
+
+{
+    string c = "{123?} (a!=b)/"
+    /* invalid characters in string */
+}$
+
+{
+    string c = "abc /* valid comment in string */ def"
+
+    c = "abc /* multiline comment start within string"
+    more comment. above string should have unterminated error*/
+    a = a+1
+}$
+
+{
+    /* warning, program ended without $ */
+}
