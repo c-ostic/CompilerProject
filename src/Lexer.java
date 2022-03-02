@@ -41,6 +41,9 @@ public class Lexer
         return errors > 0;
     }
 
+    //Returns the current program count
+    public int getProgramCount() {return programCount;}
+
     //Returns the list of tokens of the next readable program
     //Returns empty if there are no more programs
     //Returns null if the program had an error
