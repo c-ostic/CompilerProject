@@ -87,6 +87,30 @@ public class Parser
 
     private void parseProgram()
     {
-        
+
+    }
+
+    //Checks and consumes the next token in the stream or throws an error if there is no match
+    //Returns the type that the token matched (mostly for cases when there are multiple types)
+    //If overrideOnMismatch is true, no error is thrown and TokenType.Default is returned (used for epsilon production)
+    private TokenType match(boolean overrideOnMismatch, TokenType... types) throws Exception
+    {
+        //determine if the current token in the stream matches any of the types given
+        for(TokenType type : types)
+        {
+            //if the type matches, increment the counter and return the type the token matched
+            if(tokenStream.get(tokenCount).getType() == type)
+            {
+                tokenCount++;
+                return type;
+            }
+        }
+
+        //if overrideOnMismatch is true, then an error should not be thrown even if none of the types match
+        //this is used in the case of StatementList and CharList, where no matches mean the epsilon production
+        if(overrideOnMismatch)
+            return TokenType.DEFAULT;
+        else
+            throw new Exception();
     }
 }
