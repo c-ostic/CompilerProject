@@ -1,5 +1,8 @@
 import java.util.List;
 
+class InvalidTokenException extends Exception
+{}
+
 public class Parser
 {
     private List<Token> tokenStream;
@@ -85,15 +88,33 @@ public class Parser
         Recursive Descent Methods
      */
 
-    private void parseProgram()
+    private void parseProgram() throws InvalidTokenException
+    {
+        System.out.println("INFO Parser - parseProgram()");
+        parseBlock();
+        match(true, false, TokenType.EOP);
+    }
+
+    private void parseBlock() throws InvalidTokenException
+    {
+        System.out.println("INFO Parser - parseBlock()");
+        match(true, false, TokenType.L_BRACE);
+        parseStatementList();
+        match(true, false, TokenType.R_BRACE);
+    }
+
+    private void parseStatementList() throws InvalidTokenException
     {
 
     }
 
     //Checks and consumes the next token in the stream or throws an error if there is no match
     //Returns the type that the token matched (mostly for cases when there are multiple types)
-    //If overrideOnMismatch is true, no error is thrown and TokenType.Default is returned (used for epsilon production)
-    private TokenType match(boolean overrideOnMismatch, TokenType... types) throws Exception
+    //Params
+    //consumeToken: whether this match should consume the next token or just compare it
+    //canBeEpsilon: whether an epsilon production is allowed (if so, don't throw an error if nothing matches)
+    //types: the expected types for the current token
+    private TokenType match(boolean consumeToken, boolean canBeEpsilon, TokenType... types) throws InvalidTokenException
     {
         //determine if the current token in the stream matches any of the types given
         for(TokenType type : types)
@@ -101,16 +122,19 @@ public class Parser
             //if the type matches, increment the counter and return the type the token matched
             if(tokenStream.get(tokenCount).getType() == type)
             {
-                tokenCount++;
+                if(consumeToken)
+                    tokenCount++;
                 return type;
             }
         }
 
-        //if overrideOnMismatch is true, then an error should not be thrown even if none of the types match
+        //At this point, the current token did not match any of the expected types
+
+        //if canBeEpsilon is true, then an error should not be thrown even if none of the types match
         //this is used in the case of StatementList and CharList, where no matches mean the epsilon production
-        if(overrideOnMismatch)
+        if(canBeEpsilon)
             return TokenType.DEFAULT;
         else
-            throw new Exception();
+            throw new InvalidTokenException();
     }
 }
