@@ -231,33 +231,79 @@ public class Parser
     // ::== Id
     private void parseExpr() throws InvalidTokenException
     {
-
+        switch(match(false, false,
+                TokenType.DIGIT,
+                TokenType.QUOTE,
+                TokenType.L_PAREN,
+                TokenType.BOOL_VAL,
+                TokenType.ID))
+        {
+            case DIGIT:
+            {
+                parseIntExpr();
+                break;
+            }
+            case QUOTE:
+            {
+                parseStringExpr();
+                break;
+            }
+            case L_PAREN: case BOOL_VAL:
+            {
+                parseBooleanExpr();
+                break;
+            }
+            case ID:
+            {
+                parseId();
+                break;
+            }
+        }
     }
 
     // ::== digit intop Expr
     // ::== digit
     private void parseIntExpr() throws InvalidTokenException
     {
+        match(true, false, TokenType.DIGIT);
 
+        //if the next token is an intop, it is consumed, otherwise it (and the following if statement) is skipped
+        TokenType nextToken = match(true, true, TokenType.ADDITION);
+        if(nextToken == TokenType.ADDITION)
+            parseExpr();
     }
 
     // ::== " CharList "
     private void parseStringExpr() throws InvalidTokenException
     {
-
+        match(true, false, TokenType.QUOTE);
+        parseCharList();
+        match(true, false, TokenType.QUOTE);
     }
 
     // ::== ( Expr boolop Expr )
     // ::== boolVal
     private void parseBooleanExpr() throws InvalidTokenException
     {
+        TokenType nextToken = match(true, false, TokenType.L_PAREN, TokenType.BOOL_VAL);
 
+        if(nextToken == TokenType.L_PAREN)
+        {
+            parseExpr();
+            match(true, false, TokenType.EQUALITY, TokenType.INEQUALITY);
+            parseExpr();
+        }
+        else
+        {
+            //do nothing
+            //this means the token is of type BOOL_VAL (or an error was thrown in match)
+        }
     }
 
     // ::== char
     private void parseId() throws InvalidTokenException
     {
-
+        match(true, false, TokenType.ID);
     }
 
     // ::== char CharList
@@ -265,11 +311,22 @@ public class Parser
     // ::== epsilon
     private void parseCharList() throws InvalidTokenException
     {
-
+        //Token Type CHAR includes both a-z and spaces inside of strings
+        TokenType nextToken = match(true, true, TokenType.CHAR);
+        if(nextToken == TokenType.CHAR)
+        {
+            parseCharList();
+        }
+        else
+        {
+            //do nothing
+            //epsilon production
+        }
     }
 
     //Checks and consumes the next token in the stream or throws an error if there is no match
     //Returns the type that the token matched (mostly for cases when there are multiple types)
+    //Handles all references to the tokenStream as well as error throwing
     //Params
     //consumeToken: whether this match should consume the next token or just compare it
     //canBeEpsilon: whether an epsilon production is allowed (if so, don't throw an error if nothing matches)
