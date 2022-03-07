@@ -88,6 +88,7 @@ public class Parser
         Recursive Descent Methods
      */
 
+    // ::== Block $
     private void parseProgram() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseProgram()");
@@ -95,6 +96,7 @@ public class Parser
         match(true, false, TokenType.EOP);
     }
 
+    // ::== { StatementList }
     private void parseBlock() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBlock()");
@@ -103,7 +105,93 @@ public class Parser
         match(true, false, TokenType.R_BRACE);
     }
 
+    // ::== Statement StatementList
+    // ::== epsilon
     private void parseStatementList() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== PrintStatement
+    // ::== AssignmentStatement
+    // ::== VarDecl
+    // ::== WhileStatement
+    // ::== IfStatement
+    // ::== Block
+    private void parseStatement() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== print ( Expr )
+    private void parsePrintStatement() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== Id = Expr
+    private void parseAssignStatement() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== type Id
+    private void parseVarDeclStatement() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== while BooleanExpr Block
+    private void parseWhileStatement() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== if BooleanExpr Block
+    private void parseIfStatement() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== IntExpr
+    // ::== StringExpr
+    // ::== BooleanExpr
+    // ::== Id
+    private void parseExpr() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== digit intop Expr
+    // ::== digit
+    private void parseIntExpr() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== " CharList "
+    private void parseStringExpr() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== ( Expr boolop Expr )
+    // ::== boolVal
+    private void parseBooleanExpr() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== char
+    private void parseId() throws InvalidTokenException
+    {
+
+    }
+
+    // ::== char CharList
+    // ::== space CharList
+    // ::== epsilon
+    private void parseCharList() throws InvalidTokenException
     {
 
     }
@@ -119,6 +207,10 @@ public class Parser
         //determine if the current token in the stream matches any of the types given
         for(TokenType type : types)
         {
+            //throw an error if the end of the token stream was reached
+            if(tokenCount >= tokenStream.size())
+                throw  new InvalidTokenException();
+
             //if the type matches, increment the counter and return the type the token matched
             if(tokenStream.get(tokenCount).getType() == type)
             {
