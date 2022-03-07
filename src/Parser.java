@@ -1,7 +1,12 @@
 import java.util.List;
 
 class InvalidTokenException extends Exception
-{}
+{
+    public InvalidTokenException(String message)
+    {
+        super(message);
+    }
+}
 
 public class Parser
 {
@@ -45,6 +50,7 @@ public class Parser
         {
             //if the parse fails, it will end up here
             errors++;
+            System.out.println("ERROR Parser - " + e.getMessage());
             System.out.println("ERROR Parser - Parse failed with " + errors + " error(s)");
         }
 
@@ -209,7 +215,7 @@ public class Parser
         {
             //throw an error if the end of the token stream was reached
             if(tokenCount >= tokenStream.size())
-                throw  new InvalidTokenException();
+                throw  new InvalidTokenException("Expected " + types.toString() + " but found end of file");
 
             //if the type matches, increment the counter and return the type the token matched
             if(tokenStream.get(tokenCount).getType() == type)
@@ -227,6 +233,6 @@ public class Parser
         if(canBeEpsilon)
             return TokenType.DEFAULT;
         else
-            throw new InvalidTokenException();
+            throw new InvalidTokenException("Expected " + types.toString() + " but found " + tokenStream.get(tokenCount).toString());
     }
 }
