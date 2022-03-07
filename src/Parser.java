@@ -57,9 +57,7 @@ public class Parser
         return cst_root;
     }
 
-    /*
-        Tree Utility Methods
-     */
+    /*------------------------------------------- Tree Utility Methods -----------------------------------------------*/
 
     //method for adding the root node to the tree
     //the root node has a label and no parents (null in the TreeNode constructor)
@@ -90,9 +88,7 @@ public class Parser
         current = current.getParent();
     }
 
-    /*
-        Recursive Descent Methods
-     */
+    /*---------------------------------------- Recursive Descent Methods ---------------------------------------------*/
 
     // ::== Block $
     private void parseProgram() throws InvalidTokenException
@@ -144,6 +140,7 @@ public class Parser
     // ::== Block
     private void parseStatement() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseStatement()");
         switch (match(false, false,
             TokenType.PRINT_KEY,
             TokenType.ID,
@@ -188,6 +185,7 @@ public class Parser
     // ::== print ( Expr )
     private void parsePrintStatement() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parsePrintStatement()");
         match(true, false, TokenType.PRINT_KEY);
         match(true, false, TokenType.L_PAREN);
         parseExpr();
@@ -197,6 +195,7 @@ public class Parser
     // ::== Id = Expr
     private void parseAssignStatement() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseAssignmentStatement()");
         parseId();
         match(true, false, TokenType.ASSIGN);
         parseExpr();
@@ -205,6 +204,7 @@ public class Parser
     // ::== type Id
     private void parseVarDeclStatement() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseVarDecl()");
         match(true, false, TokenType.VAR_TYPE);
         parseId();
     }
@@ -212,6 +212,7 @@ public class Parser
     // ::== while BooleanExpr Block
     private void parseWhileStatement() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseWhileStatement()");
         match(true, false, TokenType.WHILE_KEY);
         parseBooleanExpr();
         parseBlock();
@@ -220,6 +221,7 @@ public class Parser
     // ::== if BooleanExpr Block
     private void parseIfStatement() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseIfStatement()");
         match(true, false, TokenType.IF_KEY);
         parseBooleanExpr();
         parseBlock();
@@ -231,6 +233,7 @@ public class Parser
     // ::== Id
     private void parseExpr() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseExpr()");
         switch(match(false, false,
                 TokenType.DIGIT,
                 TokenType.QUOTE,
@@ -265,6 +268,7 @@ public class Parser
     // ::== digit
     private void parseIntExpr() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseIntExpr()");
         match(true, false, TokenType.DIGIT);
 
         //if the next token is an intop, it is consumed, otherwise it (and the following if statement) is skipped
@@ -276,6 +280,7 @@ public class Parser
     // ::== " CharList "
     private void parseStringExpr() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseStringExpr()");
         match(true, false, TokenType.QUOTE);
         parseCharList();
         match(true, false, TokenType.QUOTE);
@@ -285,6 +290,7 @@ public class Parser
     // ::== boolVal
     private void parseBooleanExpr() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseBooleanExpr()");
         TokenType nextToken = match(true, false, TokenType.L_PAREN, TokenType.BOOL_VAL);
 
         if(nextToken == TokenType.L_PAREN)
@@ -303,6 +309,7 @@ public class Parser
     // ::== char
     private void parseId() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseId()");
         match(true, false, TokenType.ID);
     }
 
@@ -311,6 +318,8 @@ public class Parser
     // ::== epsilon
     private void parseCharList() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseCharList()");
+        
         //Token Type CHAR includes both a-z and spaces inside of strings
         TokenType nextToken = match(true, true, TokenType.CHAR);
         if(nextToken == TokenType.CHAR)
