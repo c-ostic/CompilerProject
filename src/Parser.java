@@ -115,7 +115,25 @@ public class Parser
     // ::== epsilon
     private void parseStatementList() throws InvalidTokenException
     {
+        System.out.println("INFO Parser - parseStatementList()");
+        TokenType nextToken = match(false, true,
+                TokenType.PRINT_KEY,
+                TokenType.ID,
+                TokenType.VAR_TYPE,
+                TokenType.WHILE_KEY,
+                TokenType.IF_KEY,
+                TokenType.L_BRACE);
 
+        if(nextToken != TokenType.DEFAULT)
+        {
+            parseStatement();
+            parseStatementList();
+        }
+        else
+        {
+            //epsilon production
+            //TokenType was default, which means the next token did not match any valid Statement
+        }
     }
 
     // ::== PrintStatement
@@ -126,37 +144,85 @@ public class Parser
     // ::== Block
     private void parseStatement() throws InvalidTokenException
     {
-
+        switch (match(false, false,
+            TokenType.PRINT_KEY,
+            TokenType.ID,
+            TokenType.VAR_TYPE,
+            TokenType.WHILE_KEY,
+            TokenType.IF_KEY,
+            TokenType.L_BRACE))
+        {
+            case PRINT_KEY:
+            {
+                parsePrintStatement();
+                break;
+            }
+            case ID:
+            {
+                parseAssignStatement();
+                break;
+            }
+            case VAR_TYPE:
+            {
+                parseVarDeclStatement();
+                break;
+            }
+            case WHILE_KEY:
+            {
+                parseWhileStatement();
+                break;
+            }
+            case IF_KEY:
+            {
+                parseIfStatement();
+                break;
+            }
+            case L_BRACE:
+            {
+                parseBlock();
+                break;
+            }
+        }
     }
 
     // ::== print ( Expr )
     private void parsePrintStatement() throws InvalidTokenException
     {
-
+        match(true, false, TokenType.PRINT_KEY);
+        match(true, false, TokenType.L_PAREN);
+        parseExpr();
+        match(true, false, TokenType.R_PAREN);
     }
 
     // ::== Id = Expr
     private void parseAssignStatement() throws InvalidTokenException
     {
-
+        parseId();
+        match(true, false, TokenType.ASSIGN);
+        parseExpr();
     }
 
     // ::== type Id
     private void parseVarDeclStatement() throws InvalidTokenException
     {
-
+        match(true, false, TokenType.VAR_TYPE);
+        parseId();
     }
 
     // ::== while BooleanExpr Block
     private void parseWhileStatement() throws InvalidTokenException
     {
-
+        match(true, false, TokenType.WHILE_KEY);
+        parseBooleanExpr();
+        parseBlock();
     }
 
     // ::== if BooleanExpr Block
     private void parseIfStatement() throws InvalidTokenException
     {
-
+        match(true, false, TokenType.IF_KEY);
+        parseBooleanExpr();
+        parseBlock();
     }
 
     // ::== IntExpr
