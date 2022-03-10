@@ -82,6 +82,6 @@ public class Token
     //toString shows all bits of information in the Token
     public String toString()
     {
-        return type.name() + " [ " + value + " ] found at (" + line + ":" + column + ")";
+        return type.name() + " [ " + value + " ] at (" + line + ":" + column + ")";
     }
 }

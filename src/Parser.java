@@ -347,7 +347,7 @@ public class Parser
         {
             //throw an error if the end of the token stream was reached
             if(tokenCount >= tokenStream.size())
-                throw  new InvalidTokenException("Expected " + types.toString() + " but found end of file");
+                throw  new InvalidTokenException("Expected " + typesArrayToString(types) + " but found end of file");
 
             //if the type matches, increment the counter and return the type the token matched
             if(tokenStream.get(tokenCount).getType() == type)
@@ -365,6 +365,20 @@ public class Parser
         if(canBeEpsilon)
             return TokenType.DEFAULT;
         else
-            throw new InvalidTokenException("Expected " + types.toString() + " but found " + tokenStream.get(tokenCount).toString());
+            throw new InvalidTokenException("Expected " + typesArrayToString(types) + " but found " + tokenStream.get(tokenCount).toString());
+    }
+
+    //utility method for match to help print a list of token types
+    //assumes the types array is not empty
+    private String typesArrayToString(TokenType[] types)
+    {
+        String result = "[ ";
+
+        result += types[0];
+
+        for(int i = 1;i < types.length;i++)
+            result += ", " + types[i];
+
+        return result + " ]";
     }
 }
