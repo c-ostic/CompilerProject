@@ -94,6 +94,7 @@ public class Parser
     private void parseProgram() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseProgram()");
+        addRootNode("Program");
         parseBlock();
         match(true, false, TokenType.EOP);
     }
@@ -102,9 +103,11 @@ public class Parser
     private void parseBlock() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBlock()");
+        addBranchNode("Block");
         match(true, false, TokenType.L_BRACE);
         parseStatementList();
         match(true, false, TokenType.R_BRACE);
+        moveUp();
     }
 
     // ::== Statement StatementList
@@ -112,6 +115,7 @@ public class Parser
     private void parseStatementList() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStatementList()");
+        addBranchNode("StatementList");
         TokenType nextToken = match(false, true,
                 TokenType.PRINT_KEY,
                 TokenType.ID,
@@ -130,6 +134,7 @@ public class Parser
             //epsilon production
             //TokenType was default, which means the next token did not match any valid Statement
         }
+        moveUp();
     }
 
     // ::== PrintStatement
@@ -141,6 +146,7 @@ public class Parser
     private void parseStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStatement()");
+        addBranchNode("Statement");
         switch (match(false, false,
             TokenType.PRINT_KEY,
             TokenType.ID,
@@ -180,51 +186,62 @@ public class Parser
                 break;
             }
         }
+        moveUp();
     }
 
     // ::== print ( Expr )
     private void parsePrintStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parsePrintStatement()");
+        addBranchNode("PrintStatement");
         match(true, false, TokenType.PRINT_KEY);
         match(true, false, TokenType.L_PAREN);
         parseExpr();
         match(true, false, TokenType.R_PAREN);
+        moveUp();
     }
 
     // ::== Id = Expr
     private void parseAssignStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseAssignmentStatement()");
+        addBranchNode("AssignmentStatement");
         parseId();
         match(true, false, TokenType.ASSIGN);
         parseExpr();
+        moveUp();
     }
 
     // ::== type Id
     private void parseVarDeclStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseVarDecl()");
+        addBranchNode("VarDecl");
         match(true, false, TokenType.VAR_TYPE);
         parseId();
+        moveUp();
     }
 
     // ::== while BooleanExpr Block
     private void parseWhileStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseWhileStatement()");
+        addBranchNode("WhileStatement");
         match(true, false, TokenType.WHILE_KEY);
         parseBooleanExpr();
         parseBlock();
+        moveUp();
     }
 
     // ::== if BooleanExpr Block
     private void parseIfStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseIfStatement()");
+        addBranchNode("IfStatement");
         match(true, false, TokenType.IF_KEY);
         parseBooleanExpr();
         parseBlock();
+        moveUp();
     }
 
     // ::== IntExpr
@@ -234,6 +251,7 @@ public class Parser
     private void parseExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseExpr()");
+        addBranchNode("Expr");
         switch(match(false, false,
                 TokenType.DIGIT,
                 TokenType.QUOTE,
@@ -262,6 +280,7 @@ public class Parser
                 break;
             }
         }
+        moveUp();
     }
 
     // ::== digit intop Expr
@@ -269,21 +288,25 @@ public class Parser
     private void parseIntExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseIntExpr()");
+        addBranchNode("IntExpr");
         match(true, false, TokenType.DIGIT);
 
         //if the next token is an intop, it is consumed, otherwise it (and the following if statement) is skipped
         TokenType nextToken = match(true, true, TokenType.ADDITION);
         if(nextToken == TokenType.ADDITION)
             parseExpr();
+        moveUp();
     }
 
     // ::== " CharList "
     private void parseStringExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStringExpr()");
+        addBranchNode("StringExpr");
         match(true, false, TokenType.QUOTE);
         parseCharList();
         match(true, false, TokenType.QUOTE);
+        moveUp();
     }
 
     // ::== ( Expr boolop Expr )
@@ -291,6 +314,7 @@ public class Parser
     private void parseBooleanExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBooleanExpr()");
+        addBranchNode("BooleanExpr");
         TokenType nextToken = match(true, false, TokenType.L_PAREN, TokenType.BOOL_VAL);
 
         if(nextToken == TokenType.L_PAREN)
@@ -304,13 +328,16 @@ public class Parser
             //do nothing
             //this means the token is of type BOOL_VAL (or an error was thrown in match)
         }
+        moveUp();
     }
 
     // ::== char
     private void parseId() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseId()");
+        addBranchNode("Id");
         match(true, false, TokenType.ID);
+        moveUp();
     }
 
     // ::== char CharList
@@ -319,6 +346,7 @@ public class Parser
     private void parseCharList() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseCharList()");
+        addBranchNode("CharList");
         
         //Token Type CHAR includes both a-z and spaces inside of strings
         TokenType nextToken = match(true, true, TokenType.CHAR);
@@ -331,6 +359,7 @@ public class Parser
             //do nothing
             //epsilon production
         }
+        moveUp();
     }
 
     //Checks and consumes the next token in the stream or throws an error if there is no match
@@ -353,7 +382,10 @@ public class Parser
             if(tokenStream.get(tokenCount).getType() == type)
             {
                 if(consumeToken)
+                {
+                    addLeafNode(tokenStream.get(tokenCount));
                     tokenCount++;
+                }
                 return type;
             }
         }
