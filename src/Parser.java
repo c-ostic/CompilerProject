@@ -45,13 +45,21 @@ public class Parser
             System.out.println("INFO Parser - parse()");
             parseProgram();
             System.out.println("INFO Parser - Parse completed with 0 errors");
+            System.out.println();
+            System.out.println(treeToString());
         }
-        catch (Exception e)
+        catch (InvalidTokenException e)
         {
             //if the parse fails, it will end up here
             errors++;
             System.out.println("ERROR Parser - " + e.getMessage());
             System.out.println("ERROR Parser - Parse failed with " + errors + " error(s)");
+            System.out.println();
+            System.out.println("CST for Program " + program + " skipped due to parse errors");
+            System.out.println();
+
+            //dump whatever partial tree was created
+            cst_root = null;
         }
 
         return cst_root;
@@ -63,7 +71,7 @@ public class Parser
     //the root node has a label and no parents (null in the TreeNode constructor)
     private void addRootNode(String label)
     {
-        cst_root = new TreeNode(label, null);
+        cst_root = new TreeNode(label);
         current = cst_root;
     }
 
@@ -71,7 +79,8 @@ public class Parser
     //non-leaf nodes always have labels instead of tokens
     private void addBranchNode(String label)
     {
-        TreeNode newNode = new TreeNode(label, current);
+        TreeNode newNode = new TreeNode(label);
+        current.addChild(newNode);
         current = newNode;
     }
 
@@ -79,13 +88,56 @@ public class Parser
     //leaf nodes always have tokens
     private void addLeafNode(Token token)
     {
-        TreeNode newNode = new TreeNode(token, current);
+        TreeNode newNode = new TreeNode(token);
+        current.addChild(newNode);
     }
 
     //utility method for moving back up the tree
     private void moveUp()
     {
         current = current.getParent();
+    }
+
+    //This method and its helper expand() based on code by
+    //      Alan G. Labouseur, and based on the 2009
+    //      work by Michael Ardizzone and Tim Smith.
+    private String treeToString()
+    {
+        return expand(cst_root, 0);
+    }
+
+    //Code based on other work, see treeToString() above
+    //Recursive function to handle the expansion of the nodes.
+    private String expand(TreeNode node, int depth)
+    {
+        String traversalResult = "";
+
+        // Space out based on the current depth so
+        // this looks at least a little tree-like.
+        for (int i = 0; i < depth; i++)
+        {
+            traversalResult += "-";
+        }
+
+        // If the node is a leaf node...
+        if (node.isLeaf())
+        {
+            // ... note the leaf node.
+            traversalResult += "[" + node + "]";
+            traversalResult += "\n";
+        }
+        else
+        {
+            // There are children, so note these interior/branch nodes and ...
+            traversalResult += "<" + node + "> \n";
+            // .. recursively expand them.
+            for (int i = 0; i < node.getChildren().size(); i++)
+            {
+                traversalResult += expand(node.getChildren().get(i), depth + 1);
+            }
+        }
+
+        return traversalResult;
     }
 
     /*---------------------------------------- Recursive Descent Methods ---------------------------------------------*/
