@@ -1,0 +1,48 @@
+/* Test valid code paths for parse */
+{
+    /* var declaration */
+    int a
+    string b
+    boolean c
+
+    /* assignment statement */
+    /* int expression - single digit */
+    a = 5
+    /* int expression - digit intop expression */
+    a = 5 + 5 + 5 + 5 + a
+    /* string expression - empty, non-empty, and with spaces*/
+    b = ""
+    b = "test"
+    b = "test space"
+    /* boolean expression - single value */
+    c = true
+
+    /* print */
+    /* expression - id */
+    print ( b )
+
+    /* if with single boolean */
+    if true
+    {
+    }
+
+    /* if with expression compare */
+    if (a == b)
+    {
+    }
+
+    /* while with single boolean */
+    while false
+    {
+    }
+
+    /* while with more complex expression compare (not necessarily valid semantically) */
+    while ( 5 + a != ( true == "" ))
+    {
+    }
+
+    /* block */
+    {
+        /* empty block - starting epsilon statementList */
+    }
+}$
