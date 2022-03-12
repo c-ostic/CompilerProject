@@ -1,0 +1,134 @@
+/* Test invalid code paths for parse */
+
+/* parseProgram */
+/* invalid character before EOP */
+{} a $
+
+/* parseBlock */
+/* missing left brace */
+a = 5
+}$
+/* missing right brace */
+{
+a = 5
+$
+
+/* parseStatement */
+/* invalid start to a statement
+   this will actually be caught in parse block
+   when it tries to find a "}" after a supposedly
+   empty statement list*/
+{
+    ( a == 5 )
+}$
+
+/* parsePrint */
+/* no opening parenthesis */
+{
+    print a
+}$
+/* no closing parenthesis */
+{
+    print (a
+}$
+/* no expression */
+{
+    print ()
+}$
+
+/* parseAssign */
+/* no equals */
+{
+    a + 5
+}$
+/* nothing after id */
+{
+    a
+}$
+/* no expression */
+{
+    a =
+}$
+
+/* parseVarDecl */
+/* no Id */
+{
+    string
+}$
+/* not Id after type */
+{
+    string =
+}$
+
+/* parseWhile */
+/* nothing after while */
+{
+    while
+}$
+/* no block */
+{
+    while true
+}$
+
+/* parseIf */
+/* nothing after if */
+{
+    if
+}$
+/* no block */
+{
+    if true
+}$
+
+/* parseExpr */
+/* not an expression */
+{
+    print(=)
+}$
+/* intop after id */
+{
+    a = a + 1
+}$
+
+/* parseIntExpr */
+/* nothing after intop */
+{
+    print(1 + )
+}$
+/* not a intop
+   will likely be caught somewhere else,
+   but still an error */
+{
+    print(4 = 1)
+}$
+
+/* parseStringExpr */
+/* many of these will be handled in lex */
+/* no ending quote */
+{
+    a = "test
+}$
+/* invalid character in char list */
+{
+    a = "test=txt"
+}$
+
+/* parseBoolExpr */
+/* neither parenthesis nor true/false */
+{
+    if a == b
+    {
+    }
+}$
+/* parenthesis with wrong boolOp expression */
+{
+    if (a 0 b)
+    {
+    }
+}$
+/* parenthesis with no ending parenthesis */
+{
+    if (a == b
+    {
+    }
+}$
