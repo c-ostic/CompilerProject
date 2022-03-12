@@ -41,6 +41,9 @@ public class Lexer
         return errors > 0;
     }
 
+    //Returns the current program count
+    public int getProgramCount() {return programCount;}
+
     //Returns the list of tokens of the next readable program
     //Returns empty if there are no more programs
     //Returns null if the program had an error
@@ -134,7 +137,8 @@ public class Lexer
         //print any applicable warnings and errors
         if(currProgram.size() != 0 && currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
         {
-            System.out.println("WARN Lexer - Program ended without '$'");
+            System.out.println("WARN Lexer - Program ended without '$', adding it for you");
+            currProgram.add(new Token(TokenType.EOP, "$", currLine, currCol));
         }
 
         if(isCommented)

@@ -14,9 +14,15 @@ public class Compiler
             Lexer lexer = new Lexer(scan);
             List<Token> tokens;
 
+            Parser parser = new Parser();
+            TreeNode cst;
+
             while (lexer.hasNextProgram())
             {
                 tokens = lexer.getNextProgram();
+                System.out.println();
+
+                cst = parser.tryParseProgram(tokens, lexer.getProgramCount(), lexer.hasError());
                 System.out.println();
             }
         }

@@ -1,4 +1,4 @@
-/* Errors and other wrong things */
+/* Lex errors and other wrong things */
 {
     !
     &^/
