@@ -1,4 +1,4 @@
-$ /* Empty and whitespace programs. None should fail */ $$
+$ /* Empty and whitespace programs. None should fail lex */ $$
 $
 
 

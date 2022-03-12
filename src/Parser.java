@@ -428,6 +428,8 @@ public class Parser
         for(TokenType type : types)
         {
             //throw an error if the end of the token stream was reached
+            //theoretically this should never happen since lex adds an EOP token if there is not one,
+            //which would either correctly end the program or throw an error
             if(tokenCount >= tokenStream.size())
                 throw  new InvalidTokenException("Expected " + typesArrayToString(types) + " but found end of file");
 
