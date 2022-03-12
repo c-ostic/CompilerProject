@@ -374,11 +374,12 @@ public class Parser
             parseExpr();
             match(true, false, TokenType.EQUALITY, TokenType.INEQUALITY);
             parseExpr();
+            match(true, false, TokenType.R_PAREN);
         }
         else
         {
             //do nothing
-            //this means the token is of type BOOL_VAL (or an error was thrown in match)
+            //this means the token was of type BOOL_VAL and was already consumed in the first match function
         }
         moveUp();
     }

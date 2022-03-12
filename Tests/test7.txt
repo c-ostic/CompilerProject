@@ -1,16 +1,18 @@
 /* Other Valid Programs */
 {
-    int a = 0
+    int a
+    a = 0
     while(a != 9)
     {
         print(a)
-        a = a + 1
+        a = 1 + a
     }
     print("done")
 }$
 
 {
-    string n = "wheatley"
+    string n
+    n = "wheatley"
 
     print("when life gives you lemons")
 
