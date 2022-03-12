@@ -22,10 +22,7 @@ public class Compiler
                 tokens = lexer.getNextProgram();
                 System.out.println();
 
-                if(lexer.hasError())
-                    continue;
-
-                cst = parser.tryParseProgram(tokens, lexer.getProgramCount());
+                cst = parser.tryParseProgram(tokens, lexer.getProgramCount(), lexer.hasError());
                 System.out.println();
             }
         }

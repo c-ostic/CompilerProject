@@ -33,8 +33,17 @@ public class Parser
 
     //Tries to parse the program given by the list of tokens
     //If the parse fails, an exception will be thrown in recursive descent and caught here
-    public TreeNode tryParseProgram(List<Token> tokens, int program)
+    public TreeNode tryParseProgram(List<Token> tokens, int program, boolean hadPrevError)
     {
+        //before doing anything, if lex had an error, skip parsing and CST
+        if(hadPrevError)
+        {
+            System.out.println("Parse for Program " + program + " skipped due to previous errors");
+            System.out.println("CST for Program " + program + " skipped due to previous errors");
+            System.out.println();
+            return null;
+        }
+
         //reset all the necessary values
         reset();
         tokenStream = tokens;
