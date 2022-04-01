@@ -15,7 +15,7 @@ public class Compiler
             List<Token> tokens;
 
             Parser parser = new Parser();
-            TreeNode cst;
+            SyntaxTree cst;
 
             while (lexer.hasNextProgram())
             {

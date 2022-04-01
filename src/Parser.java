@@ -12,8 +12,7 @@ public class Parser
 {
     private List<Token> tokenStream;
     private int tokenCount;
-    private TreeNode cst_root;
-    private TreeNode current;
+    private SyntaxTree cst;
     private int errors;
 
     public Parser()
@@ -26,14 +25,13 @@ public class Parser
     {
         tokenStream = null;
         tokenCount = 0;
-        cst_root = null;
-        current = null;
+        cst = new SyntaxTree();
         errors = 0;
     }
 
     //Tries to parse the program given by the list of tokens
     //If the parse fails, an exception will be thrown in recursive descent and caught here
-    public TreeNode tryParseProgram(List<Token> tokens, int program, boolean hadPrevError)
+    public SyntaxTree tryParseProgram(List<Token> tokens, int program, boolean hadPrevError)
     {
         //before doing anything, if lex had an error, skip parsing and CST
         if(hadPrevError)
@@ -55,7 +53,7 @@ public class Parser
             parseProgram();
             System.out.println("INFO Parser - Parse completed with 0 errors");
             System.out.println();
-            System.out.println(treeToString());
+            System.out.println(cst.treeToString());
         }
         catch (InvalidTokenException e)
         {
@@ -68,85 +66,10 @@ public class Parser
             System.out.println();
 
             //dump whatever partial tree was created
-            cst_root = null;
+            cst = null;
         }
 
-        return cst_root;
-    }
-
-    /*------------------------------------------- Tree Utility Methods -----------------------------------------------*/
-
-    //method for adding the root node to the tree
-    //the root node has a label and no parents (null in the TreeNode constructor)
-    private void addRootNode(String label)
-    {
-        cst_root = new TreeNode(label);
-        current = cst_root;
-    }
-
-    //method for adding a branch node to the tree
-    //non-leaf nodes always have labels instead of tokens
-    private void addBranchNode(String label)
-    {
-        TreeNode newNode = new TreeNode(label);
-        current.addChild(newNode);
-        current = newNode;
-    }
-
-    //method for adding a leaf node to the tree
-    //leaf nodes always have tokens
-    private void addLeafNode(Token token)
-    {
-        TreeNode newNode = new TreeNode(token);
-        current.addChild(newNode);
-    }
-
-    //utility method for moving back up the tree
-    private void moveUp()
-    {
-        current = current.getParent();
-    }
-
-    //This method and its helper expand() based on code by
-    //      Alan G. Labouseur, and based on the 2009
-    //      work by Michael Ardizzone and Tim Smith.
-    private String treeToString()
-    {
-        return expand(cst_root, 0);
-    }
-
-    //Code based on other work, see treeToString() above
-    //Recursive function to handle the expansion of the nodes.
-    private String expand(TreeNode node, int depth)
-    {
-        String traversalResult = "";
-
-        // Space out based on the current depth so
-        // this looks at least a little tree-like.
-        for (int i = 0; i < depth; i++)
-        {
-            traversalResult += "-";
-        }
-
-        // If the node is a leaf node...
-        if (node.isLeaf())
-        {
-            // ... note the leaf node.
-            traversalResult += "[" + node + "]";
-            traversalResult += "\n";
-        }
-        else
-        {
-            // There are children, so note these interior/branch nodes and ...
-            traversalResult += "<" + node + "> \n";
-            // .. recursively expand them.
-            for (int i = 0; i < node.getChildren().size(); i++)
-            {
-                traversalResult += expand(node.getChildren().get(i), depth + 1);
-            }
-        }
-
-        return traversalResult;
+        return cst;
     }
 
     /*---------------------------------------- Recursive Descent Methods ---------------------------------------------*/
@@ -155,7 +78,7 @@ public class Parser
     private void parseProgram() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseProgram()");
-        addRootNode("Program");
+        cst.addRootNode("Program");
         parseBlock();
         match(true, false, TokenType.EOP);
     }
@@ -164,11 +87,11 @@ public class Parser
     private void parseBlock() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBlock()");
-        addBranchNode("Block");
+        cst.addBranchNode("Block");
         match(true, false, TokenType.L_BRACE);
         parseStatementList();
         match(true, false, TokenType.R_BRACE);
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== Statement StatementList
@@ -176,7 +99,7 @@ public class Parser
     private void parseStatementList() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStatementList()");
-        addBranchNode("StatementList");
+        cst.addBranchNode("StatementList");
         TokenType nextToken = match(false, true,
                 TokenType.PRINT_KEY,
                 TokenType.ID,
@@ -195,7 +118,7 @@ public class Parser
             //epsilon production
             //TokenType was default, which means the next token did not match any valid Statement
         }
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== PrintStatement
@@ -207,7 +130,7 @@ public class Parser
     private void parseStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStatement()");
-        addBranchNode("Statement");
+        cst.addBranchNode("Statement");
         switch (match(false, false,
             TokenType.PRINT_KEY,
             TokenType.ID,
@@ -247,62 +170,62 @@ public class Parser
                 break;
             }
         }
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== print ( Expr )
     private void parsePrintStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parsePrintStatement()");
-        addBranchNode("PrintStatement");
+        cst.addBranchNode("PrintStatement");
         match(true, false, TokenType.PRINT_KEY);
         match(true, false, TokenType.L_PAREN);
         parseExpr();
         match(true, false, TokenType.R_PAREN);
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== Id = Expr
     private void parseAssignStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseAssignmentStatement()");
-        addBranchNode("AssignmentStatement");
+        cst.addBranchNode("AssignmentStatement");
         parseId();
         match(true, false, TokenType.ASSIGN);
         parseExpr();
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== type Id
     private void parseVarDeclStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseVarDecl()");
-        addBranchNode("VarDecl");
+        cst.addBranchNode("VarDecl");
         match(true, false, TokenType.VAR_TYPE);
         parseId();
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== while BooleanExpr Block
     private void parseWhileStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseWhileStatement()");
-        addBranchNode("WhileStatement");
+        cst.addBranchNode("WhileStatement");
         match(true, false, TokenType.WHILE_KEY);
         parseBooleanExpr();
         parseBlock();
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== if BooleanExpr Block
     private void parseIfStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseIfStatement()");
-        addBranchNode("IfStatement");
+        cst.addBranchNode("IfStatement");
         match(true, false, TokenType.IF_KEY);
         parseBooleanExpr();
         parseBlock();
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== IntExpr
@@ -312,7 +235,7 @@ public class Parser
     private void parseExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseExpr()");
-        addBranchNode("Expr");
+        cst.addBranchNode("Expr");
         switch(match(false, false,
                 TokenType.DIGIT,
                 TokenType.QUOTE,
@@ -341,7 +264,7 @@ public class Parser
                 break;
             }
         }
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== digit intop Expr
@@ -349,25 +272,25 @@ public class Parser
     private void parseIntExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseIntExpr()");
-        addBranchNode("IntExpr");
+        cst.addBranchNode("IntExpr");
         match(true, false, TokenType.DIGIT);
 
         //if the next token is an intop, it is consumed, otherwise it (and the following if statement) is skipped
         TokenType nextToken = match(true, true, TokenType.ADDITION);
         if(nextToken == TokenType.ADDITION)
             parseExpr();
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== " CharList "
     private void parseStringExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStringExpr()");
-        addBranchNode("StringExpr");
+        cst.addBranchNode("StringExpr");
         match(true, false, TokenType.QUOTE);
         parseCharList();
         match(true, false, TokenType.QUOTE);
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== ( Expr boolop Expr )
@@ -375,7 +298,7 @@ public class Parser
     private void parseBooleanExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBooleanExpr()");
-        addBranchNode("BooleanExpr");
+        cst.addBranchNode("BooleanExpr");
         TokenType nextToken = match(true, false, TokenType.L_PAREN, TokenType.BOOL_VAL);
 
         if(nextToken == TokenType.L_PAREN)
@@ -390,16 +313,16 @@ public class Parser
             //do nothing
             //this means the token was of type BOOL_VAL and was already consumed in the first match function
         }
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== char
     private void parseId() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseId()");
-        addBranchNode("Id");
+        cst.addBranchNode("Id");
         match(true, false, TokenType.ID);
-        moveUp();
+        cst.moveUp();
     }
 
     // ::== char CharList
@@ -408,7 +331,7 @@ public class Parser
     private void parseCharList() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseCharList()");
-        addBranchNode("CharList");
+        cst.addBranchNode("CharList");
         
         //Token Type CHAR includes both a-z and spaces inside of strings
         TokenType nextToken = match(true, true, TokenType.CHAR);
@@ -421,7 +344,7 @@ public class Parser
             //do nothing
             //epsilon production
         }
-        moveUp();
+        cst.moveUp();
     }
 
     //Checks and consumes the next token in the stream or throws an error if there is no match
@@ -447,7 +370,7 @@ public class Parser
             {
                 if(consumeToken)
                 {
-                    addLeafNode(tokenStream.get(tokenCount));
+                    cst.addLeafNode(tokenStream.get(tokenCount));
                     tokenCount++;
                 }
                 return type;

@@ -1,33 +1,33 @@
 import java.util.LinkedList;
 import java.util.List;
 
-public class TreeNode
+public class SyntaxTreeNode
 {
     private final String label;
     private final Token token;
-    private TreeNode parent;
-    private final List<TreeNode> children;
+    private SyntaxTreeNode parent;
+    private final List<SyntaxTreeNode> children;
 
     //Constructor for branch nodes that have a label but no token
     //If parentNode is left null, this acts as a root node
-    public TreeNode(String nonTerminal)
+    public SyntaxTreeNode(String nonTerminal)
     {
         label = nonTerminal;
         token = null;
         parent = null;
-        children = new LinkedList<TreeNode>();
+        children = new LinkedList<SyntaxTreeNode>();
     }
 
     //Constructor for leaf nodes that have an associated token
-    public TreeNode(Token terminal)
+    public SyntaxTreeNode(Token terminal)
     {
         label = terminal.getValue();
         token = terminal;
         parent = null;
-        children = new LinkedList<TreeNode>();
+        children = new LinkedList<SyntaxTreeNode>();
     }
 
-    public void addChild(TreeNode child)
+    public void addChild(SyntaxTreeNode child)
     {
         children.add(child);
         child.parent = this;
@@ -44,12 +44,12 @@ public class TreeNode
         return token;
     }
 
-    public TreeNode getParent()
+    public SyntaxTreeNode getParent()
     {
         return parent;
     }
 
-    public List<TreeNode> getChildren()
+    public List<SyntaxTreeNode> getChildren()
     {
         return children;
     }
