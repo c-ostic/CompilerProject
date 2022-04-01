@@ -72,6 +72,12 @@ public class Parser
         return cst;
     }
 
+    //Returns true if the last program parsed had an error, false otherwise
+    public boolean hasError()
+    {
+        return errors > 0;
+    }
+
     /*---------------------------------------- Recursive Descent Methods ---------------------------------------------*/
 
     // ::== Block $

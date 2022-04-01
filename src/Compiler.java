@@ -17,12 +17,18 @@ public class Compiler
             Parser parser = new Parser();
             SyntaxTree cst;
 
+            SemanticAnalyzer analyzer = new SemanticAnalyzer();
+            SyntaxTree ast;
+
             while (lexer.hasNextProgram())
             {
                 tokens = lexer.getNextProgram();
                 System.out.println();
 
                 cst = parser.tryParseProgram(tokens, lexer.getProgramCount(), lexer.hasError());
+                System.out.println();
+
+                ast = analyzer.tryAnalyzeProgram(cst, lexer.getProgramCount(), lexer.hasError() | parser.hasError());
                 System.out.println();
             }
         }

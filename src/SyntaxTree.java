@@ -1,12 +1,18 @@
 public class SyntaxTree
 {
-    SyntaxTreeNode root;
-    SyntaxTreeNode current;
+    private SyntaxTreeNode root;
+    private SyntaxTreeNode current;
 
     public SyntaxTree()
     {
         root = null;
         current = null;
+    }
+
+    //return the root node of the tree
+    public SyntaxTreeNode getRoot()
+    {
+        return root;
     }
 
     //method for adding the root node to the tree
