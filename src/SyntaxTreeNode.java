@@ -54,6 +54,11 @@ public class SyntaxTreeNode
         return children;
     }
 
+    public SyntaxTreeNode getChild(int index)
+    {
+        return children.get(index);
+    }
+
     //the node is a leaf node iff it has a token instead of just a label
     public boolean isLeaf()
     {
