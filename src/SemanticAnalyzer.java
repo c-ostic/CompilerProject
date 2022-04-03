@@ -148,6 +148,16 @@ public class SemanticAnalyzer
 
         ast.addBranchNode(NodeType.VAR_DECL);
 
+        // get the type, which is directly the first child of VarDecl
+        SyntaxTreeNode varTypeNode = varDeclNode.getChild(0);
+        assert(varTypeNode.getNodeType() == NodeType.TERMINAL);
+        ast.addLeafNode(varTypeNode.getToken());
+
+        // get the id, which is under the second child of VarDecl
+        SyntaxTreeNode idNode = varDeclNode.getChild(1).getChild(0);
+        assert(idNode.getNodeType() == NodeType.TERMINAL);
+        ast.addLeafNode(idNode.getToken());
+
         ast.moveUp();
     }
 
@@ -156,6 +166,12 @@ public class SemanticAnalyzer
         assert(whileNode.getNodeType() == NodeType.WHILE_STATEMENT);
 
         ast.addBranchNode(NodeType.WHILE_STATEMENT);
+
+        // get the boolean expression part of the while statement
+        createBooleanExpr(whileNode.getChild(1));
+
+        // get the block of the while statement
+        createBlock(whileNode.getChild(2));
 
         ast.moveUp();
     }
@@ -166,6 +182,12 @@ public class SemanticAnalyzer
 
         ast.addBranchNode(NodeType.IF_STATEMENT);
 
+        // get the boolean expression part of the if statement
+        createBooleanExpr(ifNode.getChild(1));
+
+        // get the block of the if statement
+        createBlock(ifNode.getChild(2));
+
         ast.moveUp();
     }
 
@@ -173,6 +195,13 @@ public class SemanticAnalyzer
     {
         //temp code for testing
         ast.addBranchNode(NodeType.EXPR);
+        ast.moveUp();
+    }
+
+    private void createBooleanExpr(SyntaxTreeNode exprNode)
+    {
+        //temp code for testing
+        ast.addBranchNode(NodeType.BOOLEAN_EXPR);
         ast.moveUp();
     }
 }
