@@ -193,15 +193,98 @@ public class SemanticAnalyzer
 
     private void createExpr(SyntaxTreeNode exprNode)
     {
-        //temp code for testing
-        ast.addBranchNode(NodeType.EXPR);
-        ast.moveUp();
+        assert(exprNode.getNodeType() == NodeType.EXPR);
+
+        // no branch node is created, that is left up to the individual expression types
+
+        // the only child of Expr is the type of expression (int, bool, string, id)
+        SyntaxTreeNode nextNode = exprNode.getChild(0);
+
+        switch(nextNode.getNodeType())
+        {
+            case INT_EXPR:
+            {
+                createIntExpr(nextNode);
+                break;
+            }
+            case BOOLEAN_EXPR:
+            {
+                createBooleanExpr(nextNode);
+                break;
+            }
+            case STRING_EXPR:
+            {
+                createStringExpr(nextNode);
+                break;
+            }
+            case ID:
+            {
+                // this is the simplest case for the expression, since ID always has one and only one child
+                SyntaxTreeNode idNode = nextNode.getChild(0);
+                assert(idNode.getNodeType() == NodeType.TERMINAL);
+                ast.addLeafNode(idNode.getToken());
+            }
+        }
     }
 
-    private void createBooleanExpr(SyntaxTreeNode exprNode)
+    private void createIntExpr(SyntaxTreeNode intExprNode)
     {
-        //temp code for testing
-        ast.addBranchNode(NodeType.BOOLEAN_EXPR);
-        ast.moveUp();
+        assert(intExprNode.getNodeType() == NodeType.INT_EXPR);
+
+        // the first node added should always be a digit
+        SyntaxTreeNode digitNode = intExprNode.getChild(0);
+        assert(digitNode.getNodeType() == NodeType.TERMINAL);
+
+        // if there is only one child, then the int expression is only the single digit
+        if(intExprNode.getChildren().size() == 1)
+        {
+            ast.addLeafNode(digitNode.getToken());
+        }
+        // if there is more than one child, then there is addition between the digit and another expression
+        // side note: if there were zero children somehow, it would have been in error in parse
+        else
+        {
+            ast.addBranchNode(NodeType.ADDITION);
+
+            // add in the left-hand side of the operation
+            ast.addLeafNode(digitNode.getToken());
+
+            // add in the right-hand side of the operation, which is the third child of IntExpr
+            createExpr(intExprNode.getChild(2));
+
+            ast.moveUp();
+        }
+    }
+
+    private void createBooleanExpr(SyntaxTreeNode boolExprNode)
+    {
+        // if there is only one child, then the expression is either the value "true" or "false"
+        if(boolExprNode.getChildren().size() == 1)
+        {
+            SyntaxTreeNode boolValNode = boolExprNode.getChild(0);
+            assert(boolValNode.getNodeType() == NodeType.TERMINAL);
+            ast.addLeafNode(boolValNode.getToken());
+        }
+        // if there is more than one child, then the expression is equality or inequality between expressions
+        else
+        {
+            // child 0 is "(", 1 is Expr, 2 is "==" or "!=", 3 is the second Expr, and 4 is ")"
+            SyntaxTreeNode boolOpNode = boolExprNode.getChild(2);
+            if(boolOpNode.getToken().getType() == TokenType.EQUALITY)
+                ast.addBranchNode(NodeType.EQUALITY);
+            else if(boolOpNode.getToken().getType() == TokenType.INEQUALITY)
+                ast.addBranchNode(NodeType.INEQUALITY);
+
+            // get the two expressions on either side of the operator
+            createExpr(boolExprNode.getChild(1));
+            createExpr(boolExprNode.getChild(3));
+
+            ast.moveUp();
+        }
+    }
+
+    private void createStringExpr(SyntaxTreeNode stringExprNode)
+    {
+
     }
 }

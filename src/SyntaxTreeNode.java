@@ -20,6 +20,11 @@ enum NodeType
     ID ("Id"),
     CHAR_LIST ("CharList"),
 
+    // these few are specifically used in the AST
+    ADDITION ("Addition"),
+    EQUALITY ("Equality"),
+    INEQUALITY ("Inequality"),
+
     // Have a type for leaf nodes, though in practice, this label will never be used
     TERMINAL ("Terminal");
 
