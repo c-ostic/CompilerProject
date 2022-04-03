@@ -33,6 +33,7 @@ public class SemanticAnalyzer
         reset();
 
         createAST(cst.getRoot());
+        System.out.println(ast.treeToString());
 
         return ast;
     }
@@ -60,7 +61,7 @@ public class SemanticAnalyzer
 
         //under Block is essentially a list of statements
         //so loop to find the all the statements under block
-        SyntaxTreeNode statementListNode = blockNode.getChild(1);
+        SyntaxTreeNode statementListNode = blockNode.getChild(1); // 1st and 3rd child is "{" and "}"
         assert(statementListNode.getNodeType() == NodeType.STATEMENT_LIST);
 
         while(!statementListNode.getChildren().isEmpty()) //empty statement list means the end, epsilon production
@@ -70,32 +71,108 @@ public class SemanticAnalyzer
 
             switch (nextNode.getNodeType())
             {
+                case PRINT_STATEMENT:
+                {
+                    createPrintStatement(nextNode);
+                    break;
+                }
+                case ASSIGNMENT_STATEMENT:
+                {
+                    createAssignStatement(nextNode);
+                    break;
+                }
+                case VAR_DECL:
+                {
+                    createVarDeclStatement(nextNode);
+                    break;
+                }
+                case WHILE_STATEMENT:
+                {
+                    createWhileStatement(nextNode);
+                    break;
+                }
+                case IF_STATEMENT:
+                {
+                    createIfStatement(nextNode);
+                    break;
+                }
+                case BLOCK:
+                {
+                    createBlock(nextNode);
+                    break;
+                }
             }
+
+            // move to the next StatementList node,
+            // which is the second child of the previous (non-empty) StatementList node
+            statementListNode = statementListNode.getChild(1);
+            assert(statementListNode.getNodeType() == NodeType.STATEMENT_LIST);
         }
+
+        ast.moveUp();
     }
 
-    private void createPrintStatement(SyntaxTreeNode current)
+    private void createPrintStatement(SyntaxTreeNode printNode)
     {
+        assert(printNode.getNodeType() == NodeType.PRINT_STATEMENT);
 
+        ast.addBranchNode(NodeType.PRINT_STATEMENT);
+
+        // the expression in the print statement is the third child
+        createExpr(printNode.getChild(2));
+
+        ast.moveUp();
     }
 
-    private void createAssignStatement(SyntaxTreeNode current)
+    private void createAssignStatement(SyntaxTreeNode assignNode)
     {
+        assert(assignNode.getNodeType() == NodeType.ASSIGNMENT_STATEMENT);
 
+        ast.addBranchNode(NodeType.ASSIGNMENT_STATEMENT);
+
+        // get the left-hand side of the assign statement
+        // specifically get the terminal value under the id node
+        SyntaxTreeNode idNode = assignNode.getChild(0).getChild(0);
+        assert(idNode.getNodeType() == NodeType.TERMINAL);
+        ast.addLeafNode(idNode.getToken());
+
+        // get the right-hand side of the assign, which is the third child
+        createExpr(assignNode.getChild(2));
+
+        ast.moveUp();
     }
 
-    private void createVarDeclStatement(SyntaxTreeNode current)
+    private void createVarDeclStatement(SyntaxTreeNode varDeclNode)
     {
+        assert(varDeclNode.getNodeType() == NodeType.VAR_DECL);
 
+        ast.addBranchNode(NodeType.VAR_DECL);
+
+        ast.moveUp();
     }
 
-    private void createWhileStatement(SyntaxTreeNode current)
+    private void createWhileStatement(SyntaxTreeNode whileNode)
     {
+        assert(whileNode.getNodeType() == NodeType.WHILE_STATEMENT);
 
+        ast.addBranchNode(NodeType.WHILE_STATEMENT);
+
+        ast.moveUp();
     }
 
-    private void createIfStatement(SyntaxTreeNode current)
+    private void createIfStatement(SyntaxTreeNode ifNode)
     {
+        assert(ifNode.getNodeType() == NodeType.IF_STATEMENT);
 
+        ast.addBranchNode(NodeType.IF_STATEMENT);
+
+        ast.moveUp();
+    }
+
+    private void createExpr(SyntaxTreeNode exprNode)
+    {
+        //temp code for testing
+        ast.addBranchNode(NodeType.EXPR);
+        ast.moveUp();
     }
 }
