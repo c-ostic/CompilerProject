@@ -41,10 +41,10 @@ public class SemanticAnalyzer
 
     private void createAST(SyntaxTreeNode cstRoot)
     {
-        assert(cstRoot.getLabel().equals("Program"));
+        assert(cstRoot.getNodeType() == NodeType.PROGRAM);
 
         //every CST must start with a Program node
-        ast.addRootNode("Program");
+        ast.addRootNode(NodeType.PROGRAM);
 
         //the first child of a Program node is a Block
         createBlock(cstRoot.getChild(0));
@@ -54,21 +54,21 @@ public class SemanticAnalyzer
 
     private void createBlock(SyntaxTreeNode blockNode)
     {
-        assert(blockNode.getLabel().equals("Block"));
+        assert(blockNode.getNodeType() == NodeType.BLOCK);
 
-        ast.addBranchNode("Block");
+        ast.addBranchNode(NodeType.BLOCK);
 
         //under Block is essentially a list of statements
         //so loop to find the all the statements under block
         SyntaxTreeNode statementListNode = blockNode.getChild(1);
-        assert(statementListNode.getLabel().equals("StatementList"));
+        assert(statementListNode.getNodeType() == NodeType.STATEMENT_LIST);
 
         while(!statementListNode.getChildren().isEmpty()) //empty statement list means the end, epsilon production
         {
             //this is will move past the Statement node directly to the type of statement
             SyntaxTreeNode nextNode = statementListNode.getChild(0).getChild(0);
 
-            switch (nextNode.getLabel())
+            switch (nextNode.getNodeType())
             {
             }
         }

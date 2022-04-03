@@ -1,29 +1,66 @@
 import java.util.LinkedList;
 import java.util.List;
 
+enum NodeType
+{
+    // The types for the different non-terminals that could appear in a syntax tree
+    PROGRAM ("Program"),
+    BLOCK ("Block"),
+    STATEMENT_LIST ("StatementList"),
+    STATEMENT ("Statement"),
+    PRINT_STATEMENT ("PrintStatement"),
+    ASSIGNMENT_STATEMENT ("AssignmentStatement"),
+    VAR_DECL ("VarDecl"),
+    WHILE_STATEMENT ("WhileStatement"),
+    IF_STATEMENT ("IfStatement"),
+    EXPR ("Expr"),
+    INT_EXPR ("IntExpr"),
+    STRING_EXPR ("StringExpr"),
+    BOOLEAN_EXPR ("BooleanExpr"),
+    ID ("Id"),
+    CHAR_LIST ("CharList"),
+
+    // Have a type for leaf nodes, though in practice, this label will never be used
+    TERMINAL ("Terminal");
+
+    private final String nodeLabel;
+
+    NodeType(String label)
+    {
+        nodeLabel = label;
+    }
+
+    public String toString()
+    {
+        return nodeLabel;
+    }
+}
+
 public class SyntaxTreeNode
 {
     private final String label;
+    private final NodeType nodeType;
     private final Token token;
     private SyntaxTreeNode parent;
     private final List<SyntaxTreeNode> children;
 
-    //Constructor for branch nodes that have a label but no token
-    //If parentNode is left null, this acts as a root node
-    public SyntaxTreeNode(String nonTerminal)
+    //Constructor for branch nodes that have a non-terminal type and no token
+    public SyntaxTreeNode(NodeType nonTerminal)
     {
-        label = nonTerminal;
+        nodeType = nonTerminal;
         token = null;
         parent = null;
+        label = nonTerminal.toString();
         children = new LinkedList<SyntaxTreeNode>();
     }
 
     //Constructor for leaf nodes that have an associated token
     public SyntaxTreeNode(Token terminal)
     {
-        label = terminal.getValue();
+        nodeType = NodeType.TERMINAL;
         token = terminal;
         parent = null;
+        label = terminal.getValue();
         children = new LinkedList<SyntaxTreeNode>();
     }
 
@@ -42,6 +79,11 @@ public class SyntaxTreeNode
     public Token getToken()
     {
         return token;
+    }
+
+    public NodeType getNodeType()
+    {
+        return nodeType;
     }
 
     public SyntaxTreeNode getParent()
