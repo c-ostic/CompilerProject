@@ -258,6 +258,8 @@ public class SemanticAnalyzer
 
     private void createBooleanExpr(SyntaxTreeNode boolExprNode)
     {
+        assert(boolExprNode.getNodeType() == NodeType.BOOLEAN_EXPR);
+
         // if there is only one child, then the expression is either the value "true" or "false"
         if(boolExprNode.getChildren().size() == 1)
         {
@@ -285,6 +287,36 @@ public class SemanticAnalyzer
 
     private void createStringExpr(SyntaxTreeNode stringExprNode)
     {
+        assert(stringExprNode.getNodeType() == NodeType.STRING_EXPR);
 
+        // add the beginning quote
+        String fullString = "\"";
+
+        // save the token of the open quote to use its positional data
+        Token openQuote = stringExprNode.getChild(0).getToken();
+
+        // a stringExpr always has a charList as the second child (even if the charList is empty)
+        SyntaxTreeNode charListNode = stringExprNode.getChild(1);
+        assert(charListNode.getNodeType() == NodeType.CHAR_LIST);
+
+        // loop through all non-empty charLists to find all characters
+        while(!charListNode.getChildren().isEmpty())
+        {
+            SyntaxTreeNode charNode = charListNode.getChild(0);
+            assert(charNode.getNodeType() == NodeType.TERMINAL);
+
+            fullString += charNode.getLabel();
+
+            // for a non-empty charList, the second child is the next charList
+            charListNode = charListNode.getChild(1);
+            assert(charListNode.getNodeType() == NodeType.CHAR_LIST);
+        }
+
+        // add the ending quote
+        fullString += "\"";
+
+        // create and add a new token to represent the full string
+        Token stringToken = new Token(TokenType.STRING, fullString, openQuote.getLineNumber(), openQuote.getColumnNumber());
+        ast.addLeafNode(stringToken);
     }
 }

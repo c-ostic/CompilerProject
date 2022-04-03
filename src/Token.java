@@ -30,6 +30,7 @@ enum TokenType
     DIGIT,      // 0-9
     CHAR,       // a-z | *spaces in strings*
     SPACE,      // *spaces/whitespace not in strings*
+    STRING,     // for use in the AST when character lists are combined into one token
 
     //Error/Invalid Token
     ERROR,
