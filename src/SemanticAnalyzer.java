@@ -1,6 +1,7 @@
 public class SemanticAnalyzer
 {
     private SyntaxTree ast;
+    private ScopeTree scopeTree;
     private int errors;
     private int warnings;
 
@@ -13,6 +14,7 @@ public class SemanticAnalyzer
     public void reset()
     {
         ast = new SyntaxTree();
+        scopeTree = new ScopeTree();
         errors = 0;
         warnings = 0;
     }
@@ -29,16 +31,37 @@ public class SemanticAnalyzer
             return null;
         }
 
+        System.out.println("INFO Semantic Analysis - Analyzing program " + program);
+
         //reset all the necessary values
         reset();
 
+        //create both the ast and scope tree/symbol table
         createAST(cst.getRoot());
+        createScopeTree();
+
+        //add together the errors and warnings from here and from the scope tree
+        errors += scopeTree.getErrorCount();
+        warnings += scopeTree.getWarningCount();
+
+        //print ending result of semantic analysis
+        if(errors > 0)
+        {
+            System.out.println("ERROR Semantic Analysis - Analysis failed with " + errors + " errors and " + warnings + " warnings");
+        }
+        else
+        {
+            System.out.println("INFO Semantic Analysis - Analysis succeeded with " + errors + " errors and " + warnings + " warnings");
+        }
+
+        //print the ast and symbol table
         System.out.println(ast.treeToString());
+        System.out.println(scopeTree.treeToString());
 
         return ast;
     }
 
-    // Modified recursive descent through CST to create AST
+    /*---------------------------------------- Recursive Descent Methods ---------------------------------------------*/
 
     private void createAST(SyntaxTreeNode cstRoot)
     {
@@ -318,5 +341,172 @@ public class SemanticAnalyzer
         // create and add a new token to represent the full string
         Token stringToken = new Token(TokenType.STRING, fullString, openQuote.getLineNumber(), openQuote.getColumnNumber());
         ast.addLeafNode(stringToken);
+    }
+
+    /*--------------------------------------- Scope Tree Creation Methods --------------------------------------------*/
+
+    private void createScopeTree()
+    {
+        //the first child of the root is the first block in the program
+        checkBlock(ast.getRoot().getChild(0));
+    }
+
+    private void checkBlock(SyntaxTreeNode block)
+    {
+        //create a new scope for this block (the first block will create the root node)
+        if(scopeTree.getRoot() == null)
+            scopeTree.addRootNode();
+        else
+            scopeTree.addBranchNode();
+
+        for(SyntaxTreeNode child : block.getChildren())
+        {
+            switch(child.getNodeType())
+            {
+                case PRINT_STATEMENT:
+                {
+                    //a print statement can print any type except UNKNOWN
+                    if(getExprType(child.getChild(0)) == SymbolType.UNKNOWN)
+                    {
+                        System.out.println("ERROR - Semantic Analysis - Cannot print UNKNOWN type " + child.getChild(0).getToken());
+                        errors++;
+                    }
+
+                    break;
+                }
+                case ASSIGNMENT_STATEMENT:
+                {
+                    //get the type of the expression from the right side of the assignment
+                    SymbolType assignType = getExprType(child.getChild(1));
+
+                    //initialize the variable from the left side with the type from the right side
+                    scopeTree.initializeId(child.getChild(0).getToken(), assignType);
+
+                    break;
+                }
+                case VAR_DECL:
+                {
+                    //the first child of a var_decl is the type of the declaration
+                    Token varTypeToken = child.getChild(0).getToken();
+                    //figure out which type it is based on the value of the token
+                    SymbolType varType;
+                    switch(varTypeToken.getValue())
+                    {
+                        case "int":
+                        {
+                            varType = SymbolType.INT;
+                            break;
+                        }
+                        case "string":
+                        {
+                            varType = SymbolType.STRING;
+                            break;
+                        }
+                        case "boolean":
+                        {
+                            varType = SymbolType.BOOLEAN;
+                            break;
+                        }
+                        default:
+                        {
+                            varType = SymbolType.UNKNOWN;
+                            break;
+                        }
+                    }
+
+                    //declare the id in the current scope
+                    scopeTree.declareId(child.getChild(1).getToken(), varType);
+
+                    break;
+                }
+                case WHILE_STATEMENT:
+                case IF_STATEMENT:
+                {
+                    //check the condition
+                    //this SHOULD always be of type boolean, but just in case...
+                    if(getExprType(child.getChild(0)) != SymbolType.BOOLEAN)
+                    {
+                        System.out.println("ERROR - Semantic Analysis - Unexpected condition type in " + child.getToken());
+                        errors++;
+                    }
+
+                    //recursively call the next block
+                    checkBlock(child.getChild(1));
+
+                    break;
+                }
+            }
+        }
+
+        scopeTree.moveUp();
+    }
+
+    private SymbolType getExprType(SyntaxTreeNode expr)
+    {
+        switch(expr.getNodeType())
+        {
+            case ADDITION:
+            {
+                //get the type of the left side of the operator
+                SymbolType firstType = getExprType(expr.getChild(0));
+
+                //get the type of the right side of the operator
+                SymbolType secondType = getExprType(expr.getChild(1));
+
+                //if either of them are not of type int, then print an error
+                if(firstType != SymbolType.INT || secondType != SymbolType.INT)
+                {
+                    //TODO: get line and column numbers for this error
+                    System.out.println("ERROR - Semantic Analysis - Cannot add " + firstType + " to " + secondType);
+                    errors++;
+                }
+
+                return SymbolType.INT;
+            }
+            case EQUALITY:
+            case INEQUALITY:
+            {
+                //get the type of the left side of the operator
+                SymbolType firstType = getExprType(expr.getChild(0));
+
+                //get the type of the right side of the operator
+                SymbolType secondType = getExprType(expr.getChild(1));
+
+                //if the two types are not the same, then print an error
+                if(firstType != secondType)
+                {
+                    //TODO: get line and column numbers for this error
+                    System.out.println("ERROR - Semantic Analysis - Cannot compare " + firstType + " to " + secondType);
+                    errors++;
+                }
+
+                return SymbolType.BOOLEAN;
+            }
+            case TERMINAL:
+            {
+                //TERMINAL means this is a leaf node and has a token
+                Token token = expr.getToken();
+
+                //return the appropriate type based upon what kind of terminal it is
+                switch(token.getType())
+                {
+                    case DIGIT:
+                        return SymbolType.INT;
+                    case BOOL_VAL:
+                        return SymbolType.BOOLEAN;
+                    case STRING:
+                        return SymbolType.STRING;
+                    case ID:
+                        return scopeTree.useId(token);
+                    default:
+                        return SymbolType.UNKNOWN;
+                }
+            }
+            //defensive default in case I missed something
+            default:
+            {
+                return SymbolType.UNKNOWN;
+            }
+        }
     }
 }

@@ -25,7 +25,7 @@ enum NodeType
     EQUALITY ("Equality"),
     INEQUALITY ("Inequality"),
 
-    // Have a type for leaf nodes, though in practice, this label will never be used
+    // Have a type for leaf nodes
     TERMINAL ("Terminal");
 
     private final String nodeLabel;

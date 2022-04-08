@@ -75,6 +75,7 @@ public class ScopeTree
             //if the id is found in the current scope,
             //then log an error that the variable is already declared
             System.out.println("ERROR - Semantic Analysis - " + id + " already declared in scope");
+            errors++;
         }
     }
 
@@ -96,12 +97,14 @@ public class ScopeTree
                 //otherwise there is a type mismatch error
                 System.out.println("ERROR - Semantic Analysis - Type mismatch: " +
                         "Cannot assign " + symbolType + " to " + idInfo.getSymbolType() + " " + id);
+                errors++;
             }
         }
         else
         {
             //if the symbol wasn't found, log an undeclared error
             System.out.println("ERROR - Semantic Analysis - " + id + " not declared");
+            errors++;
         }
     }
 
@@ -117,6 +120,7 @@ public class ScopeTree
             if(!idInfo.isInitialized())
             {
                 System.out.println("WARN - Semantic Analysis - " + id + " used but not initialized");
+                warnings++;
             }
 
             idInfo.setUsed(true);
@@ -126,6 +130,7 @@ public class ScopeTree
         {
             //if the symbol wasn't found, log an undeclared error and return an unknown type
             System.out.println("ERROR - Semantic Analysis - " + id + " not declared");
+            errors++;
             return SymbolType.UNKNOWN;
         }
     }
