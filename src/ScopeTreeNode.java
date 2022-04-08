@@ -43,6 +43,11 @@ public class ScopeTreeNode
         return identifiers;
     }
 
+    public void addIdentifier(String id, SymbolType symbolType)
+    {
+        identifiers.put(id, new SymbolAttributes(symbolType));
+    }
+
     // Returns the symbol attributes of the given id if it exists
     // Otherwise it returns null
     // If searchParents is true, the method will call up through the whole scope tree trying to find the id
