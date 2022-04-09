@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.LinkedList;
+
 public class ScopeTree
 {
     private ScopeTreeNode root;
@@ -54,10 +57,79 @@ public class ScopeTree
         return warnings;
     }
 
+    public void printWarnings()
+    {
+        //make the queue to traverse the tree in level order (breadth first search)
+        LinkedList<ScopeTreeNode> queue = new LinkedList<ScopeTreeNode>();
+        queue.add(root);
+
+        while(!queue.isEmpty())
+        {
+            //get the node at the front of the queue
+            ScopeTreeNode current = queue.pop();
+
+            //check each of the identifiers in the current scope tree node
+            HashMap<String, SymbolAttributes> ids = current.getIdentifiers();
+            for(String id : ids.keySet())
+            {
+                SymbolAttributes attributes = ids.get(id);
+                //check if the id is used or not
+                //if it is used, there are no new warnings to print (used but not initialized is handled in useId())
+                if(!attributes.isUsed())
+                {
+                    if(attributes.isInitialized())
+                        System.out.println("WARN - Semantic Analysis - " + id + " declared (on line " + attributes.getDeclareLine() +
+                                ") and initialized but not used");
+                    else
+                        System.out.println("WARN - Semantic Analysis - " + id + " declared (on line " + attributes.getDeclareLine() +
+                                ") but not initialized or used");
+                    warnings++;
+                }
+            }
+
+            //add all the current node's children to the queue
+            for(ScopeTreeNode child : current.getChildren())
+                queue.add(child);
+        }
+    }
+
+    //returns a string representation of the symbol table
     public String treeToString()
     {
-        //TODO: Make table format
-        return "";
+        String result = "";
+
+        //make table headers
+        result += "Symbol Table\n";
+        result += "____________________________\n";
+        result += "Name  Type      Scope  Line\n";
+        result += "____________________________\n";
+
+        //make the queue to traverse the tree in level order (breadth first search)
+        LinkedList<ScopeTreeNode> queue = new LinkedList<ScopeTreeNode>();
+        queue.add(root);
+
+        while(!queue.isEmpty())
+        {
+            //get the node at the front of the queue
+            ScopeTreeNode current = queue.pop();
+
+            //print out each of the identifiers in the current scope tree node
+            HashMap<String, SymbolAttributes> ids = current.getIdentifiers();
+            for(String id : ids.keySet())
+            {
+                result += String.format("%-6s", id);
+                SymbolAttributes attributes = ids.get(id);
+                result += String.format("%-10s", attributes.getSymbolType());
+                result += String.format("%-7s", current.getScope());
+                result += attributes.getDeclareLine() + "\n";
+            }
+
+            //add all the current node's children to the queue
+            for(ScopeTreeNode child : current.getChildren())
+                queue.add(child);
+        }
+
+        return result;
     }
 
     //used to declare a new id in the scope
@@ -68,7 +140,7 @@ public class ScopeTree
         //if not found, then declare the identifier in the scope
         if(current.getSymbol(id.getValue(), false) == null)
         {
-            current.addIdentifier(id.getValue(), symbolType);
+            current.addIdentifier(id.getValue(), symbolType, id.getLineNumber());
         }
         else
         {

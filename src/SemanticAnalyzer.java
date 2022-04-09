@@ -39,6 +39,7 @@ public class SemanticAnalyzer
         //create both the ast and scope tree/symbol table
         createAST(cst.getRoot());
         createScopeTree();
+        scopeTree.printWarnings();
 
         //add together the errors and warnings from here and from the scope tree
         errors += scopeTree.getErrorCount();
