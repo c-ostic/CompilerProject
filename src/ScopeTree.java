@@ -82,11 +82,11 @@ public class ScopeTree
                 if(!attributes.isUsed())
                 {
                     if(attributes.isInitialized())
-                        System.out.println("WARN Semantic Analysis - id [" + id + "] declared (on line " + attributes.getDeclareLine() +
-                                ") and initialized but not used");
+                        System.out.println("WARN Semantic Analysis - id [" + id + "] declared at " + attributes.getDeclareLocation() +
+                                " and initialized but not used");
                     else
-                        System.out.println("WARN Semantic Analysis - id [" + id + "] declared (on line " + attributes.getDeclareLine() +
-                                ") but not initialized or used");
+                        System.out.println("WARN Semantic Analysis - id [" + id + "] declared at " + attributes.getDeclareLocation() +
+                                " but not initialized or used");
                     warnings++;
                 }
             }
@@ -108,9 +108,9 @@ public class ScopeTree
 
         //make table headers
         result += "Symbol Table\n";
-        result += "____________________________\n";
-        result += "Name  Type      Scope  Line\n";
-        result += "____________________________\n";
+        result += "_______________________________\n";
+        result += "Name  Type      Scope  Location\n";
+        result += "_______________________________\n";
 
         //make the queue to traverse the tree in level order (breadth first search)
         LinkedList<ScopeTreeNode> queue = new LinkedList<ScopeTreeNode>();
@@ -129,7 +129,7 @@ public class ScopeTree
                 SymbolAttributes attributes = ids.get(id);
                 result += String.format("%-10s", attributes.getSymbolType());
                 result += String.format("%-7s", current.getScope());
-                result += attributes.getDeclareLine() + "\n";
+                result += attributes.getDeclareLocation() + "\n";
             }
 
             //add all the current node's children to the queue
@@ -148,7 +148,7 @@ public class ScopeTree
         //if not found, then declare the identifier in the scope
         if(current.getSymbol(id.getValue(), false) == null)
         {
-            current.addIdentifier(id.getValue(), symbolType, id.getLineNumber());
+            current.addIdentifier(id.getValue(), symbolType, id.getLocation());
         }
         else
         {

@@ -43,9 +43,9 @@ public class ScopeTreeNode
         return identifiers;
     }
 
-    public void addIdentifier(String id, SymbolType symbolType, int line)
+    public void addIdentifier(String id, SymbolType symbolType, Location location)
     {
-        identifiers.put(id, new SymbolAttributes(symbolType, line));
+        identifiers.put(id, new SymbolAttributes(symbolType, location));
     }
 
     // Returns the symbol attributes of the given id if it exists

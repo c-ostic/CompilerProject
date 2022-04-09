@@ -9,16 +9,16 @@ enum SymbolType
 public class SymbolAttributes
 {
     private final SymbolType symbolType;
-    private final int declareLine;
+    private final Location declareLocation;
     private boolean initialized;
     private boolean used;
 
-    public SymbolAttributes(SymbolType type, int line)
+    public SymbolAttributes(SymbolType type, Location declareLoc)
     {
         symbolType = type;
         initialized = false;
         used = false;
-        declareLine = line;
+        declareLocation = declareLoc;
     }
 
     public SymbolType getSymbolType()
@@ -26,9 +26,9 @@ public class SymbolAttributes
         return symbolType;
     }
 
-    public int getDeclareLine()
+    public Location getDeclareLocation()
     {
-        return declareLine;
+        return declareLocation;
     }
 
     public boolean isInitialized()
