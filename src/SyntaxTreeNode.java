@@ -48,15 +48,18 @@ public class SyntaxTreeNode
     private final Token token;
     private SyntaxTreeNode parent;
     private final List<SyntaxTreeNode> children;
+    private final Location location;
 
     //Constructor for branch nodes that have a non-terminal type and no token
-    public SyntaxTreeNode(NodeType nonTerminal)
+    //Instead of a token, they are given a location of the first token within the nonterminal
+    public SyntaxTreeNode(NodeType nonTerminal, Location startLocation)
     {
         nodeType = nonTerminal;
         token = null;
         parent = null;
         label = nonTerminal.toString();
         children = new LinkedList<SyntaxTreeNode>();
+        location = startLocation;
     }
 
     //Constructor for leaf nodes that have an associated token
@@ -67,6 +70,7 @@ public class SyntaxTreeNode
         parent = null;
         label = terminal.getValue();
         children = new LinkedList<SyntaxTreeNode>();
+        location = terminal.getLocation();
     }
 
     public void addChild(SyntaxTreeNode child)
@@ -104,6 +108,11 @@ public class SyntaxTreeNode
     public SyntaxTreeNode getChild(int index)
     {
         return children.get(index);
+    }
+
+    public Location getLocation()
+    {
+        return location;
     }
 
     //the node is a leaf node iff it has a token instead of just a label

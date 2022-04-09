@@ -91,7 +91,7 @@ public class Parser
     private void parseProgram() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseProgram()");
-        cst.addRootNode(NodeType.PROGRAM);
+        cst.addRootNode(NodeType.PROGRAM, tokenStream.get(tokenCount).getLocation());
         parseBlock();
         match(true, false, TokenType.EOP);
     }
@@ -100,7 +100,7 @@ public class Parser
     private void parseBlock() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBlock()");
-        cst.addBranchNode(NodeType.BLOCK);
+        cst.addBranchNode(NodeType.BLOCK, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.L_BRACE);
         parseStatementList();
         match(true, false, TokenType.R_BRACE);
@@ -112,7 +112,7 @@ public class Parser
     private void parseStatementList() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStatementList()");
-        cst.addBranchNode(NodeType.STATEMENT_LIST);
+        cst.addBranchNode(NodeType.STATEMENT_LIST, tokenStream.get(tokenCount).getLocation());
         TokenType nextToken = match(false, true,
                 TokenType.PRINT_KEY,
                 TokenType.ID,
@@ -143,7 +143,7 @@ public class Parser
     private void parseStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStatement()");
-        cst.addBranchNode(NodeType.STATEMENT);
+        cst.addBranchNode(NodeType.STATEMENT, tokenStream.get(tokenCount).getLocation());
         switch (match(false, false,
             TokenType.PRINT_KEY,
             TokenType.ID,
@@ -190,7 +190,7 @@ public class Parser
     private void parsePrintStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parsePrintStatement()");
-        cst.addBranchNode(NodeType.PRINT_STATEMENT);
+        cst.addBranchNode(NodeType.PRINT_STATEMENT, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.PRINT_KEY);
         match(true, false, TokenType.L_PAREN);
         parseExpr();
@@ -202,7 +202,7 @@ public class Parser
     private void parseAssignStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseAssignmentStatement()");
-        cst.addBranchNode(NodeType.ASSIGNMENT_STATEMENT);
+        cst.addBranchNode(NodeType.ASSIGNMENT_STATEMENT, tokenStream.get(tokenCount).getLocation());
         parseId();
         match(true, false, TokenType.ASSIGN);
         parseExpr();
@@ -213,7 +213,7 @@ public class Parser
     private void parseVarDeclStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseVarDecl()");
-        cst.addBranchNode(NodeType.VAR_DECL);
+        cst.addBranchNode(NodeType.VAR_DECL, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.VAR_TYPE);
         parseId();
         cst.moveUp();
@@ -223,7 +223,7 @@ public class Parser
     private void parseWhileStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseWhileStatement()");
-        cst.addBranchNode(NodeType.WHILE_STATEMENT);
+        cst.addBranchNode(NodeType.WHILE_STATEMENT, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.WHILE_KEY);
         parseBooleanExpr();
         parseBlock();
@@ -234,7 +234,7 @@ public class Parser
     private void parseIfStatement() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseIfStatement()");
-        cst.addBranchNode(NodeType.IF_STATEMENT);
+        cst.addBranchNode(NodeType.IF_STATEMENT, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.IF_KEY);
         parseBooleanExpr();
         parseBlock();
@@ -248,7 +248,7 @@ public class Parser
     private void parseExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseExpr()");
-        cst.addBranchNode(NodeType.EXPR);
+        cst.addBranchNode(NodeType.EXPR, tokenStream.get(tokenCount).getLocation());
         switch(match(false, false,
                 TokenType.DIGIT,
                 TokenType.QUOTE,
@@ -285,7 +285,7 @@ public class Parser
     private void parseIntExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseIntExpr()");
-        cst.addBranchNode(NodeType.INT_EXPR);
+        cst.addBranchNode(NodeType.INT_EXPR, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.DIGIT);
 
         //if the next token is an intop, it is consumed, otherwise it (and the following if statement) is skipped
@@ -299,7 +299,7 @@ public class Parser
     private void parseStringExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseStringExpr()");
-        cst.addBranchNode(NodeType.STRING_EXPR);
+        cst.addBranchNode(NodeType.STRING_EXPR, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.QUOTE);
         parseCharList();
         match(true, false, TokenType.QUOTE);
@@ -311,7 +311,7 @@ public class Parser
     private void parseBooleanExpr() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseBooleanExpr()");
-        cst.addBranchNode(NodeType.BOOLEAN_EXPR);
+        cst.addBranchNode(NodeType.BOOLEAN_EXPR, tokenStream.get(tokenCount).getLocation());
         TokenType nextToken = match(true, false, TokenType.L_PAREN, TokenType.BOOL_VAL);
 
         if(nextToken == TokenType.L_PAREN)
@@ -333,7 +333,7 @@ public class Parser
     private void parseId() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseId()");
-        cst.addBranchNode(NodeType.ID);
+        cst.addBranchNode(NodeType.ID, tokenStream.get(tokenCount).getLocation());
         match(true, false, TokenType.ID);
         cst.moveUp();
     }
@@ -344,7 +344,7 @@ public class Parser
     private void parseCharList() throws InvalidTokenException
     {
         System.out.println("INFO Parser - parseCharList()");
-        cst.addBranchNode(NodeType.CHAR_LIST);
+        cst.addBranchNode(NodeType.CHAR_LIST, tokenStream.get(tokenCount).getLocation());
         
         //Token Type CHAR includes both a-z and spaces inside of strings
         TokenType nextToken = match(true, true, TokenType.CHAR);

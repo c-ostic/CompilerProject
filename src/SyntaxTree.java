@@ -17,17 +17,17 @@ public class SyntaxTree
 
     //method for adding the root node to the tree
     //the root node has a label and no parents (null in the TreeNode constructor)
-    public void addRootNode(NodeType nodeType)
+    public void addRootNode(NodeType nodeType, Location location)
     {
-        root = new SyntaxTreeNode(nodeType);
+        root = new SyntaxTreeNode(nodeType, location);
         current = root;
     }
 
     //method for adding a branch node to the tree
     //non-leaf nodes always have labels instead of tokens
-    public void addBranchNode(NodeType nodeType)
+    public void addBranchNode(NodeType nodeType, Location location)
     {
-        SyntaxTreeNode newNode = new SyntaxTreeNode(nodeType);
+        SyntaxTreeNode newNode = new SyntaxTreeNode(nodeType, location);
         current.addChild(newNode);
         current = newNode;
     }

@@ -83,7 +83,7 @@ public class SemanticAnalyzer
         assert(cstRoot.getNodeType() == NodeType.PROGRAM);
 
         //every CST must start with a Program node
-        ast.addRootNode(NodeType.PROGRAM);
+        ast.addRootNode(NodeType.PROGRAM, cstRoot.getLocation());
 
         //the first child of a Program node is a Block
         createBlock(cstRoot.getChild(0));
@@ -95,7 +95,7 @@ public class SemanticAnalyzer
     {
         assert(blockNode.getNodeType() == NodeType.BLOCK);
 
-        ast.addBranchNode(NodeType.BLOCK);
+        ast.addBranchNode(NodeType.BLOCK, blockNode.getLocation());
 
         //under Block is essentially a list of statements
         //so loop to find the all the statements under block
@@ -154,7 +154,7 @@ public class SemanticAnalyzer
     {
         assert(printNode.getNodeType() == NodeType.PRINT_STATEMENT);
 
-        ast.addBranchNode(NodeType.PRINT_STATEMENT);
+        ast.addBranchNode(NodeType.PRINT_STATEMENT, printNode.getLocation());
 
         // the expression in the print statement is the third child
         createExpr(printNode.getChild(2));
@@ -166,7 +166,7 @@ public class SemanticAnalyzer
     {
         assert(assignNode.getNodeType() == NodeType.ASSIGNMENT_STATEMENT);
 
-        ast.addBranchNode(NodeType.ASSIGNMENT_STATEMENT);
+        ast.addBranchNode(NodeType.ASSIGNMENT_STATEMENT, assignNode.getLocation());
 
         // get the left-hand side of the assign statement
         // specifically get the terminal value under the id node
@@ -184,7 +184,7 @@ public class SemanticAnalyzer
     {
         assert(varDeclNode.getNodeType() == NodeType.VAR_DECL);
 
-        ast.addBranchNode(NodeType.VAR_DECL);
+        ast.addBranchNode(NodeType.VAR_DECL, varDeclNode.getLocation());
 
         // get the type, which is directly the first child of VarDecl
         SyntaxTreeNode varTypeNode = varDeclNode.getChild(0);
@@ -203,7 +203,7 @@ public class SemanticAnalyzer
     {
         assert(whileNode.getNodeType() == NodeType.WHILE_STATEMENT);
 
-        ast.addBranchNode(NodeType.WHILE_STATEMENT);
+        ast.addBranchNode(NodeType.WHILE_STATEMENT, whileNode.getLocation());
 
         // get the boolean expression part of the while statement
         createBooleanExpr(whileNode.getChild(1));
@@ -218,7 +218,7 @@ public class SemanticAnalyzer
     {
         assert(ifNode.getNodeType() == NodeType.IF_STATEMENT);
 
-        ast.addBranchNode(NodeType.IF_STATEMENT);
+        ast.addBranchNode(NodeType.IF_STATEMENT, ifNode.getLocation());
 
         // get the boolean expression part of the if statement
         createBooleanExpr(ifNode.getChild(1));
@@ -282,7 +282,8 @@ public class SemanticAnalyzer
         // side note: if there were zero children somehow, it would have been in error in parse
         else
         {
-            ast.addBranchNode(NodeType.ADDITION);
+            // add the addition node and give it the location of the "+" token
+            ast.addBranchNode(NodeType.ADDITION, intExprNode.getChild(1).getLocation());
 
             // add in the left-hand side of the operation
             ast.addLeafNode(digitNode.getToken());
@@ -311,9 +312,9 @@ public class SemanticAnalyzer
             // child 0 is "(", 1 is Expr, 2 is "==" or "!=", 3 is the second Expr, and 4 is ")"
             SyntaxTreeNode boolOpNode = boolExprNode.getChild(2);
             if(boolOpNode.getToken().getType() == TokenType.EQUALITY)
-                ast.addBranchNode(NodeType.EQUALITY);
+                ast.addBranchNode(NodeType.EQUALITY, boolOpNode.getLocation());
             else if(boolOpNode.getToken().getType() == TokenType.INEQUALITY)
-                ast.addBranchNode(NodeType.INEQUALITY);
+                ast.addBranchNode(NodeType.INEQUALITY, boolOpNode.getLocation());
 
             // get the two expressions on either side of the operator
             createExpr(boolExprNode.getChild(1));
@@ -471,8 +472,7 @@ public class SemanticAnalyzer
                 //if either of them are not of type int, then print an error
                 if(firstType != SymbolType.INT || secondType != SymbolType.INT)
                 {
-                    //TODO: get line and column numbers for this error
-                    System.out.println("ERROR Semantic Analysis - Cannot add " + firstType + " to " + secondType);
+                    System.out.println("ERROR Semantic Analysis - Cannot add " + firstType + " to " + secondType + " at " + expr.getLocation());
                     errors++;
                 }
 
@@ -490,8 +490,7 @@ public class SemanticAnalyzer
                 //if the two types are not the same, then print an error
                 if(firstType != secondType)
                 {
-                    //TODO: get line and column numbers for this error
-                    System.out.println("ERROR Semantic Analysis - Cannot compare " + firstType + " to " + secondType);
+                    System.out.println("ERROR Semantic Analysis - Cannot compare " + firstType + " to " + secondType + " at " + expr.getLocation());
                     errors++;
                 }
 

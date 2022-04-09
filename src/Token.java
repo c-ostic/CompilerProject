@@ -48,15 +48,13 @@ public class Token
 {
     private final TokenType type;
     private final String value;
-    private final int line;
-    private final int column;
+    private final Location location;
 
     public Token(TokenType tokenType, String tokenValue, int lineNumber, int colNumber)
     {
         type = tokenType;
         value = tokenValue;
-        line = lineNumber;
-        column = colNumber;
+        location = new Location(lineNumber, colNumber);
     }
 
     //getters and setters
@@ -72,17 +70,22 @@ public class Token
 
     public int getLineNumber()
     {
-        return line;
+        return location.getLine();
     }
 
     public int getColumnNumber()
     {
-        return column;
+        return location.getColumn();
+    }
+
+    public Location getLocation()
+    {
+        return location;
     }
 
     //toString shows all bits of information in the Token
     public String toString()
     {
-        return type.name() + " [ " + value + " ] at (" + line + ":" + column + ")";
+        return type.name() + " [ " + value + " ] at " + location;
     }
 }
