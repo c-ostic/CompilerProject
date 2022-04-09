@@ -58,6 +58,10 @@ public class SyntaxTree
     //Recursive function to handle the expansion of the nodes.
     private String expand(SyntaxTreeNode node, int depth)
     {
+        //immediately stop if root is null
+        if(root == null)
+            return "";
+
         String traversalResult = "";
 
         // Space out based on the current depth so

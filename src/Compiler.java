@@ -30,6 +30,11 @@ public class Compiler
 
                 ast = analyzer.tryAnalyzeProgram(cst, lexer.getProgramCount(), lexer.hasError() | parser.hasError());
                 System.out.println();
+
+                //print CST, AST, and SymbolTable
+                parser.printCST();
+                analyzer.printAST();
+                analyzer.printSymbolTable();
             }
         }
         catch(FileNotFoundException e)

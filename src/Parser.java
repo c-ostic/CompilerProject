@@ -14,6 +14,7 @@ public class Parser
     private int tokenCount;
     private SyntaxTree cst;
     private int errors;
+    private int programNum;
 
     public Parser()
     {
@@ -27,6 +28,7 @@ public class Parser
         tokenCount = 0;
         cst = new SyntaxTree();
         errors = 0;
+        programNum = 0;
     }
 
     //Tries to parse the program given by the list of tokens
@@ -37,8 +39,7 @@ public class Parser
         if(hadPrevError)
         {
             System.out.println("Parse for Program " + program + " skipped due to previous errors");
-            System.out.println("CST for Program " + program + " skipped due to previous errors");
-            System.out.println();
+            errors++;
             return null;
         }
 
@@ -46,14 +47,15 @@ public class Parser
         reset();
         tokenStream = tokens;
 
+        //save the program number
+        programNum = program;
+
         try
         {
             System.out.println("INFO Parser - Parsing program " + program);
             System.out.println("INFO Parser - parse()");
             parseProgram();
             System.out.println("INFO Parser - Parse completed with 0 errors");
-            System.out.println();
-            System.out.println(cst.treeToString());
         }
         catch (InvalidTokenException e)
         {
@@ -61,15 +63,20 @@ public class Parser
             errors++;
             System.out.println("ERROR Parser - " + e.getMessage());
             System.out.println("ERROR Parser - Parse failed with " + errors + " error(s)");
-            System.out.println();
-            System.out.println("CST for Program " + program + " skipped due to parse errors");
-            System.out.println();
 
             //dump whatever partial tree was created
             cst = null;
         }
 
         return cst;
+    }
+
+    public void printCST()
+    {
+        if(errors == 0)
+            System.out.println(cst.treeToString());
+        else
+            System.out.println("CST for Program " + programNum + " skipped due to previous errors");
     }
 
     //Returns true if the last program parsed had an error, false otherwise

@@ -4,6 +4,7 @@ public class SemanticAnalyzer
     private ScopeTree scopeTree;
     private int errors;
     private int warnings;
+    private int programNum;
 
     public SemanticAnalyzer()
     {
@@ -17,6 +18,7 @@ public class SemanticAnalyzer
         scopeTree = new ScopeTree();
         errors = 0;
         warnings = 0;
+        programNum = 0;
     }
 
     public SyntaxTree tryAnalyzeProgram(SyntaxTree cst, int program, boolean hadPrevError)
@@ -25,9 +27,9 @@ public class SemanticAnalyzer
         if(hadPrevError)
         {
             System.out.println("Semantic Analysis for Program " + program + " skipped due to previous errors");
-            System.out.println("AST for Program " + program + " skipped due to previous errors");
-            System.out.println("Symbol Table for Program " + program + " skipped due to previous errors");
             System.out.println();
+            System.out.println("AST for Program " + program + " skipped due to previous errors");
+            errors++;
             return null;
         }
 
@@ -35,6 +37,9 @@ public class SemanticAnalyzer
 
         //reset all the necessary values
         reset();
+
+        //save the program number
+        programNum = program;
 
         //create both the ast and scope tree/symbol table
         createAST(cst.getRoot());
@@ -55,11 +60,20 @@ public class SemanticAnalyzer
             System.out.println("INFO Semantic Analysis - Analysis succeeded with " + errors + " errors and " + warnings + " warnings");
         }
 
-        //print the ast and symbol table
-        System.out.println(ast.treeToString());
-        System.out.println(scopeTree.treeToString());
-
         return ast;
+    }
+
+    public void printAST()
+    {
+        System.out.println(ast.treeToString());
+    }
+
+    public void printSymbolTable()
+    {
+        if(errors == 0)
+            System.out.println(scopeTree.treeToString());
+        else
+            System.out.println("Symbol Table for Program " + programNum + " skipped due to previous errors");
     }
 
     /*---------------------------------------- Recursive Descent Methods ---------------------------------------------*/
@@ -369,7 +383,7 @@ public class SemanticAnalyzer
                     //a print statement can print any type except UNKNOWN
                     if(getExprType(child.getChild(0)) == SymbolType.UNKNOWN)
                     {
-                        System.out.println("ERROR - Semantic Analysis - Cannot print UNKNOWN type " + child.getChild(0).getToken());
+                        System.out.println("ERROR Semantic Analysis - Cannot print UNKNOWN type " + child.getChild(0).getToken());
                         errors++;
                     }
 
@@ -427,7 +441,7 @@ public class SemanticAnalyzer
                     //this SHOULD always be of type boolean, but just in case...
                     if(getExprType(child.getChild(0)) != SymbolType.BOOLEAN)
                     {
-                        System.out.println("ERROR - Semantic Analysis - Unexpected condition type in " + child.getToken());
+                        System.out.println("ERROR Semantic Analysis - Unexpected condition type in " + child.getToken());
                         errors++;
                     }
 
@@ -458,7 +472,7 @@ public class SemanticAnalyzer
                 if(firstType != SymbolType.INT || secondType != SymbolType.INT)
                 {
                     //TODO: get line and column numbers for this error
-                    System.out.println("ERROR - Semantic Analysis - Cannot add " + firstType + " to " + secondType);
+                    System.out.println("ERROR Semantic Analysis - Cannot add " + firstType + " to " + secondType);
                     errors++;
                 }
 
@@ -477,7 +491,7 @@ public class SemanticAnalyzer
                 if(firstType != secondType)
                 {
                     //TODO: get line and column numbers for this error
-                    System.out.println("ERROR - Semantic Analysis - Cannot compare " + firstType + " to " + secondType);
+                    System.out.println("ERROR Semantic Analysis - Cannot compare " + firstType + " to " + secondType);
                     errors++;
                 }
 
