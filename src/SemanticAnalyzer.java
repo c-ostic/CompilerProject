@@ -5,6 +5,7 @@ public class SemanticAnalyzer
     private int errors;
     private int warnings;
     private int programNum;
+    private boolean previousError;
 
     public SemanticAnalyzer()
     {
@@ -19,27 +20,27 @@ public class SemanticAnalyzer
         errors = 0;
         warnings = 0;
         programNum = 0;
+        previousError = false;
     }
 
     public SyntaxTree tryAnalyzeProgram(SyntaxTree cst, int program, boolean hadPrevError)
     {
-        //before doing anything, if lex or parse had an error, skip AST and symbol table
-        if(hadPrevError)
-        {
-            System.out.println("Semantic Analysis for Program " + program + " skipped due to previous errors");
-            System.out.println();
-            System.out.println("AST for Program " + program + " skipped due to previous errors");
-            errors++;
-            return null;
-        }
-
-        System.out.println("INFO Semantic Analysis - Analyzing program " + program);
-
         //reset all the necessary values
         reset();
 
         //save the program number
         programNum = program;
+
+        //before doing anything, if lex or parse had an error, skip AST and symbol table
+        if(hadPrevError)
+        {
+            System.out.println("Semantic Analysis for Program " + program + " skipped due to previous errors");
+            errors++;
+            previousError = true;
+            return null;
+        }
+
+        System.out.println("INFO Semantic Analysis - Analyzing program " + program);
 
         //create both the ast and scope tree/symbol table
         createAST(cst.getRoot());
@@ -65,13 +66,22 @@ public class SemanticAnalyzer
 
     public void printAST()
     {
-        System.out.println(ast.treeToString());
+        if(!previousError)
+        {
+            System.out.println("AST for program " + programNum);
+            System.out.println(ast.treeToString());
+        }
+        else
+            System.out.println("AST for Program " + programNum + " skipped due to previous errors");
     }
 
     public void printSymbolTable()
     {
         if(errors == 0)
+        {
+            System.out.println("Symbol Table for program " + programNum);
             System.out.println(scopeTree.treeToString());
+        }
         else
             System.out.println("Symbol Table for Program " + programNum + " skipped due to previous errors");
     }
@@ -450,6 +460,11 @@ public class SemanticAnalyzer
                     checkBlock(child.getChild(1));
 
                     break;
+                }
+                case BLOCK:
+                {
+                    //recursively call the next block
+                    checkBlock(child);
                 }
             }
         }

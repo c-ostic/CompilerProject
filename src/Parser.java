@@ -35,6 +35,13 @@ public class Parser
     //If the parse fails, an exception will be thrown in recursive descent and caught here
     public SyntaxTree tryParseProgram(List<Token> tokens, int program, boolean hadPrevError)
     {
+        //reset all the necessary values
+        reset();
+        tokenStream = tokens;
+
+        //save the program number
+        programNum = program;
+
         //before doing anything, if lex had an error, skip parsing and CST
         if(hadPrevError)
         {
@@ -42,13 +49,6 @@ public class Parser
             errors++;
             return null;
         }
-
-        //reset all the necessary values
-        reset();
-        tokenStream = tokens;
-
-        //save the program number
-        programNum = program;
 
         try
         {
@@ -74,7 +74,10 @@ public class Parser
     public void printCST()
     {
         if(errors == 0)
+        {
+            System.out.println("CST for program " + programNum);
             System.out.println(cst.treeToString());
+        }
         else
             System.out.println("CST for Program " + programNum + " skipped due to previous errors");
     }

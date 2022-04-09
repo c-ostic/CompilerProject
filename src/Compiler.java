@@ -35,6 +35,7 @@ public class Compiler
                 parser.printCST();
                 analyzer.printAST();
                 analyzer.printSymbolTable();
+                System.out.println();
             }
         }
         catch(FileNotFoundException e)
