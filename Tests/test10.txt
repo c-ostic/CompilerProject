@@ -1,0 +1,86 @@
+/* Test errors and warnings in Semantic Analysis */
+
+/* undeclared identifier */
+{
+    /* in assignment */
+    a = 1
+
+    {
+        /* another block with correct variable just for good measure */
+        string a
+        a = "hello"
+        print(a)
+    }
+
+    /* in use */
+    print(a)
+
+    if(a == true)
+    {
+    }
+
+    /* in use on inner addition */
+    while(true == 1 + a)
+    {
+    }
+}$
+
+/* redeclared identifier in same scope */
+{
+    int a
+    a = 0
+
+    /* redeclare as different type */
+    string a
+    /* redeclare as same type */
+    int a
+
+    {
+        /* declare in new scope (no error) */
+        int a
+    }
+    /* use a in context of int (using correct declaration) */
+    print((a == 1))
+
+    /* use a in context of string (using incorrect declaration) */
+    print((a == "hello"))
+}$
+
+/* type mismatches */
+{
+    int a
+    /* type mismatch in assignment */
+    a = true
+    a = "hello"
+
+    boolean b
+    /* type mismatch in comparison */
+    b = (a == true)
+    b = (a != 4)
+
+    /* type mismatch in addition and comparison */
+    if(4 + b == "yes"){}
+}$
+
+/* warnings */
+{
+    int a
+
+    /* use without intitializing */
+    print(a)
+
+    /* declare and initialize, never use */
+    boolean b
+    b = true
+
+    /* declare, never initialize or use */
+    string c
+
+    /* same name id initialized/used in inner scope, but not in outer scope */
+    int x
+    {
+        int x
+        x = 6
+        print(x)
+    }
+}$

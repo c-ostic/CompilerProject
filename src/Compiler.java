@@ -15,7 +15,10 @@ public class Compiler
             List<Token> tokens;
 
             Parser parser = new Parser();
-            TreeNode cst;
+            SyntaxTree cst;
+
+            SemanticAnalyzer analyzer = new SemanticAnalyzer();
+            SyntaxTree ast;
 
             while (lexer.hasNextProgram())
             {
@@ -23,6 +26,15 @@ public class Compiler
                 System.out.println();
 
                 cst = parser.tryParseProgram(tokens, lexer.getProgramCount(), lexer.hasError());
+                System.out.println();
+
+                ast = analyzer.tryAnalyzeProgram(cst, lexer.getProgramCount(), lexer.hasError() | parser.hasError());
+                System.out.println();
+
+                //print CST, AST, and SymbolTable
+                parser.printCST();
+                analyzer.printAST();
+                analyzer.printSymbolTable();
                 System.out.println();
             }
         }
