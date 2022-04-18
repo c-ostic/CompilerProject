@@ -149,6 +149,7 @@ public class ScopeTree
         if(current.getSymbol(id.getValue(), false) == null)
         {
             current.addIdentifier(id.getValue(), symbolType, id.getLocation());
+            id.setScope(current.getScope());
         }
         else
         {
@@ -171,6 +172,7 @@ public class ScopeTree
             if(idInfo.getSymbolType() == symbolType)
             {
                 idInfo.setInitialized(true);
+                id.setScope(current.getScope());
             }
             else
             {
@@ -204,6 +206,7 @@ public class ScopeTree
             }
 
             idInfo.setUsed(true);
+            id.setScope(current.getScope());
             return idInfo.getSymbolType();
         }
         else
