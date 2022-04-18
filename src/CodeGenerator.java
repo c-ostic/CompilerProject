@@ -4,6 +4,7 @@ public class CodeGenerator
     private final int EXE_SIZE = 0x100;
 
     private String[] executable;
+    private BackpatchTable backpatchTable;
     private int heapStart;
     private int programNum;
 
@@ -18,6 +19,9 @@ public class CodeGenerator
         executable = new String[EXE_SIZE];
         for(int i = 0;i < executable.length;i++)
             executable[i] = "00";
+
+        //create the backpatch table
+        backpatchTable = new BackpatchTable();
 
         //set the start of the heap to the end of the executable
         heapStart = EXE_SIZE - 1;
