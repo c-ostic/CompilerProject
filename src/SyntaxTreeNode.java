@@ -50,6 +50,9 @@ public class SyntaxTreeNode
     private final List<SyntaxTreeNode> children;
     private final Location location;
 
+    //used specifically for print statement nodes to save what type they are printing
+    private SymbolType printType;
+
     //Constructor for branch nodes that have a non-terminal type and no token
     //Instead of a token, they are given a location of the first token within the nonterminal
     public SyntaxTreeNode(NodeType nonTerminal, Location startLocation)
@@ -113,6 +116,16 @@ public class SyntaxTreeNode
     public Location getLocation()
     {
         return location;
+    }
+
+    public SymbolType getPrintType()
+    {
+        return printType;
+    }
+
+    public void setPrintType(SymbolType type)
+    {
+        printType = type;
     }
 
     //the node is a leaf node iff it has a token instead of just a label

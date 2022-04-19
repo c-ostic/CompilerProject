@@ -112,6 +112,23 @@ public class CodeGenerator
     private String generatePrint(SyntaxTreeNode printNode)
     {
         String codeString = "";
+
+        String printExpr = generateExpr(printNode.getChild(0));
+
+        //set the Y register
+        if(printExpr.length() == 3)
+            codeString += "A0 " + printExpr;
+        else if(printExpr.length() == 6)
+            codeString += "AC " + printExpr;
+        else
+            codeString += printExpr + "AC " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+        //set the X register
+        if(printNode.getPrintType() == SymbolType.INT || printNode.getPrintType() == SymbolType.BOOLEAN)
+            codeString += "A2 01 ";
+        else if(printNode.getPrintType() == SymbolType.STRING)
+            codeString += "A2 02 ";
+
         return codeString;
     }
 
@@ -157,18 +174,26 @@ public class CodeGenerator
                 String firstHalf = generateExpr(exprNode.getChild(0));
                 String secondHalf = generateExpr(exprNode.getChild(1));
 
-                //if the second half is a literal, first save it into the temp location
                 if(secondHalf.length() == 3)
+                {
+                    //if the second half is a literal, first save it into the temp location, then load the first half and add the temp
                     codeString += "A9 " + secondHalf + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
-
-                //load the accumulator with the first half of the expression
-                codeString += "A9 " + firstHalf; //by the rules of the grammar, the first half is guaranteed to be a single digit
-
-                //now add the second half of the expression
-                if(secondHalf.length() == 6)
-                    codeString += "6D " + secondHalf;
-                else
+                    codeString += "A9 " + firstHalf; //the first half is guaranteed to be a single digit
                     codeString += "6D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                }
+                else if(secondHalf.length() == 6)
+                {
+                    //if the length is 6 (an id) just load the first half and add the id
+                    codeString += "A9 " + firstHalf; //the first half is guaranteed to be a single digit
+                    codeString += "6D " + secondHalf;
+                }
+                else
+                {
+                    //if the length is not an id (saved into temp), add the second half op codes, load the first half, and add the temp
+                    codeString += secondHalf;
+                    codeString += "A9 " + firstHalf; //the first half is guaranteed to be a single digit
+                    codeString += "6D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                }
 
                 break;
             }

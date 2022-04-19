@@ -391,12 +391,17 @@ public class SemanticAnalyzer
             {
                 case PRINT_STATEMENT:
                 {
+                    SymbolType exprType = getExprType(child.getChild(0));
+
                     //a print statement can print any type except UNKNOWN
-                    if(getExprType(child.getChild(0)) == SymbolType.UNKNOWN)
+                    if(exprType == SymbolType.UNKNOWN)
                     {
                         System.out.println("ERROR Semantic Analysis - Cannot print UNKNOWN type " + child.getChild(0).getToken());
                         errors++;
                     }
+
+                    //set the printType for this print statement
+                    child.setPrintType(exprType);
 
                     break;
                 }
