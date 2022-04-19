@@ -39,7 +39,7 @@ public class BackpatchTable
         ids.add(id);
         scopes.add(scope);
         //the placeholder name is T and the current count
-        String tempName = "T" + varCount;
+        String tempName = "T" + varCount + " ";
         varCount++;
         placeholders.add(tempName);
 

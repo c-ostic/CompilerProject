@@ -47,8 +47,13 @@ public class CodeGenerator
 
     /*-------------------------------------------- Code Gen Methods --------------------------------------------------*/
 
+    private final String TEMP_ID = "temp";
+
     private void generateProgram(SyntaxTree ast)
     {
+        //start the backpatch off with a temp storage value
+        backpatchTable.findOrCreate(TEMP_ID, 0);
+
         //the first child of the root is the first block in the program
         //get the code in the form of a space delineated string
         String codeString = generateBlock(ast.getRoot().getChild(0));
@@ -131,6 +136,89 @@ public class CodeGenerator
     private String generateIf(SyntaxTreeNode ifNode)
     {
         String codeString = "";
+        return codeString;
+    }
+
+    /*
+    This method returns String lengths of 3 different sizes
+    Length 3 - this means some int or bool literal (ex. "9", "4", "true")
+    Length 6 - this means a memory address for an id (ex. "a")
+    Length >6 - this means some kind of expression that saves its result in the TEMP_ID location
+     */
+    private String generateExpr(SyntaxTreeNode exprNode)
+    {
+        String codeString = "";
+
+        switch(exprNode.getNodeType())
+        {
+            case ADDITION:
+            {
+                //get both halves of the expression
+                String firstHalf = generateExpr(exprNode.getChild(0));
+                String secondHalf = generateExpr(exprNode.getChild(1));
+
+                //if the second half is a literal, first save it into the temp location
+                if(secondHalf.length() == 3)
+                    codeString += "A9 " + secondHalf + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+                //load the accumulator with the first half of the expression
+                codeString += "A9 " + firstHalf; //by the rules of the grammar, the first half is guaranteed to be a single digit
+
+                //now add the second half of the expression
+                if(secondHalf.length() == 6)
+                    codeString += "6D " + secondHalf;
+                else
+                    codeString += "6D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+                break;
+            }
+            case EQUALITY:
+            {
+                break;
+            }
+            case INEQUALITY:
+            {
+                break;
+            }
+            case TERMINAL:
+            {
+                //TERMINAL means this is a leaf node and has a token
+                Token token = exprNode.getToken();
+
+                //add the appropriate op codes to the code string
+                switch(token.getType())
+                {
+                    case DIGIT:
+                    {
+                        //add 0 padded digit (since literal ints can be only 1 digit)
+                        codeString += "0" + token.getValue() + " ";
+                        break;
+                    }
+                    case BOOL_VAL:
+                    {
+                        //add 01 for true, 00 for false
+                        if(token.getValue().equals("true"))
+                            codeString += "01 ";
+                        else
+                            codeString += "00 ";
+                        break;
+                    }
+                    case STRING:
+                    {
+                        //TODO
+                        break;
+                    }
+                    case ID:
+                    {
+                        codeString += backpatchTable.findOrCreate(token.getValue(), token.getScope()) + "00 ";
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+
         return codeString;
     }
 }
