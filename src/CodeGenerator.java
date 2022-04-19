@@ -81,7 +81,7 @@ public class CodeGenerator
         //iterate through the code array to put it into the executable, backpatching along the way
         for(int i = 0;i < codeArray.length;i++)
         {
-            if(codeArray[i].matches("T."))
+            if(codeArray[i].startsWith("T"))
                 executable[i] = backpatchTable.getBackpatchValue(codeArray[i]);
             else
                 executable[i] = codeArray[i];
@@ -264,7 +264,7 @@ public class CodeGenerator
                     }
                     case ID:
                     {
-                        codeString += backpatchTable.findOrCreate(token.getValue(), token.getScope()) + "00 ";
+                        codeString += backpatchTable.findOrCreate(token.getValue(), token.getScope());
                         break;
                     }
                 }

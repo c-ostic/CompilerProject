@@ -39,7 +39,7 @@ public class BackpatchTable
         ids.add(id);
         scopes.add(scope);
         //the placeholder name is T and the current count
-        String tempName = "T" + varCount + " ";
+        String tempName = "T" + varCount + " 00 ";
         varCount++;
         placeholders.add(tempName);
 
@@ -59,10 +59,16 @@ public class BackpatchTable
         }
     }
 
-    //get the backpatch value of the associated temp value
+    //get the backpatch value of the associated temp value (given first half of little endian)
     public String getBackpatchValue(String placeholderValue)
     {
-        int index = placeholders.indexOf(placeholderValue);
-        return backpatchValues.get(index);
+        //the assumption is that only the first half of the little endian format is given, so add the 00
+        int index = placeholders.indexOf(placeholderValue + " 00 ");
+
+        //if not found, just return the placeholder value
+        if(index == -1)
+            return placeholderValue;
+        else
+            return backpatchValues.get(index);
     }
 }
