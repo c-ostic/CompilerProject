@@ -42,7 +42,21 @@ public class CodeGenerator
             return;
         }
 
+        System.out.println("INFO Code Generation - Generating code for program " + program);
         generateProgram(ast);
+    }
+
+    public void printExecutable()
+    {
+        System.out.println("Executable:");
+
+        for(int i = 0;i < executable.length;i++)
+        {
+            System.out.print(executable[i] + " ");
+
+            if(i % 8 == 7)
+                System.out.println();
+        }
     }
 
     /*-------------------------------------------- Code Gen Methods --------------------------------------------------*/
@@ -58,9 +72,21 @@ public class CodeGenerator
         //get the code in the form of a space delineated string
         String codeString = generateBlock(ast.getRoot().getChild(0));
 
-        //iterate through the full string to put it into the executable
+        //turn the codeString into a usable array
+        String[] codeArray = codeString.split(" ");
 
-        //backpatch the table, then iterate through the array changing necessary parts
+        //backpatch the table
+        backpatchTable.backpatch(codeArray.length);
+
+        //iterate through the code array to put it into the executable, backpatching along the way
+        for(int i = 0;i < codeArray.length;i++)
+        {
+            if(codeArray[i].matches("T."))
+                executable[i] = backpatchTable.getBackpatchValue(codeArray[i]);
+            else
+                executable[i] = codeArray[i];
+        }
+        //TODO: add check for crashing into heap
     }
 
     private String generateBlock(SyntaxTreeNode blockNode)
@@ -128,6 +154,9 @@ public class CodeGenerator
             codeString += "A2 01 ";
         else if(printNode.getPrintType() == SymbolType.STRING)
             codeString += "A2 02 ";
+
+        //add the system call
+        codeString += "FF ";
 
         return codeString;
     }

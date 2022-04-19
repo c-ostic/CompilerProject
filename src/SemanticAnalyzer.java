@@ -23,6 +23,11 @@ public class SemanticAnalyzer
         previousError = false;
     }
 
+    public boolean hasError()
+    {
+        return errors > 0;
+    }
+
     public SyntaxTree tryAnalyzeProgram(SyntaxTree cst, int program, boolean hadPrevError)
     {
         //reset all the necessary values
