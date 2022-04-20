@@ -164,6 +164,19 @@ public class CodeGenerator
     private String generateAssignment(SyntaxTreeNode assignmentNode)
     {
         String codeString = "";
+
+        String idCode = generateExpr(assignmentNode.getChild(0));
+        String assignmentExpr = generateExpr(assignmentNode.getChild(1));
+
+        if(assignmentExpr.length() == 3)
+            codeString += "A9 " + assignmentExpr;
+        else if(assignmentExpr.length() == 6)
+            codeString += "AD " + assignmentExpr;
+        else
+            codeString += assignmentExpr + "AD " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+        codeString += "8D " + idCode;
+
         return codeString;
     }
 
