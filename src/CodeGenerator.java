@@ -150,9 +150,9 @@ public class CodeGenerator
             codeString += printExpr + "AC " + backpatchTable.findOrCreate(TEMP_ID, 0);
 
         //set the X register
-        if(printNode.getPrintType() == SymbolType.INT || printNode.getPrintType() == SymbolType.BOOLEAN)
+        if(printNode.getExprType() == SymbolType.INT || printNode.getExprType() == SymbolType.BOOLEAN)
             codeString += "A2 01 ";
-        else if(printNode.getPrintType() == SymbolType.STRING)
+        else if(printNode.getExprType() == SymbolType.STRING)
             codeString += "A2 02 ";
 
         //add the system call
@@ -170,6 +170,22 @@ public class CodeGenerator
     private String generateVarDecl(SyntaxTreeNode varDeclNode)
     {
         String codeString = "";
+
+        String idCode = generateExpr(varDeclNode.getChild(1));
+
+        if(varDeclNode.getExprType() == SymbolType.STRING)
+        {
+            //var declaration of string (set to end of execution since it is guaranteed to be "00")
+            codeString += "A9 FF ";
+        }
+        else
+        {
+            //var declaration of int or bool
+            codeString += "A9 00 ";
+        }
+
+        codeString += "8D " + idCode;
+
         return codeString;
     }
 
@@ -186,6 +202,9 @@ public class CodeGenerator
     }
 
     /*
+    Generates code for all expressions, including those that are single symbols/ids/strings
+    This method handles all temporary backpatch values
+
     This method returns String lengths of 3 different sizes
     Length 3 - this means some int or bool literal (ex. "9", "4", "true")
     Length 6 - this means a memory address for an id (ex. "a")

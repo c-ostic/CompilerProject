@@ -406,7 +406,7 @@ public class SemanticAnalyzer
                     }
 
                     //set the printType for this print statement
-                    child.setPrintType(exprType);
+                    child.setExprType(exprType);
 
                     break;
                 }
@@ -431,16 +431,19 @@ public class SemanticAnalyzer
                         case "int":
                         {
                             varType = SymbolType.INT;
+                            child.setExprType(SymbolType.INT);
                             break;
                         }
                         case "string":
                         {
                             varType = SymbolType.STRING;
+                            child.setExprType(SymbolType.STRING);
                             break;
                         }
                         case "boolean":
                         {
                             varType = SymbolType.BOOLEAN;
+                            child.setExprType(SymbolType.BOOLEAN);
                             break;
                         }
                         default:
