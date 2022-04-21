@@ -69,8 +69,8 @@ public class CodeGenerator
         backpatchTable.findOrCreate(TEMP_ID, 0);
 
         //the first child of the root is the first block in the program
-        //get the code in the form of a space delineated string
-        String codeString = generateBlock(ast.getRoot().getChild(0));
+        //get the code in the form of a space delineated string and add a halt op code
+        String codeString = generateBlock(ast.getRoot().getChild(0)) + "00 ";
 
         //turn the codeString into a usable array
         String[] codeArray = codeString.split(" ");
@@ -255,6 +255,9 @@ public class CodeGenerator
                     codeString += "A9 " + firstHalf; //the first half is guaranteed to be a single digit
                     codeString += "6D " + backpatchTable.findOrCreate(TEMP_ID, 0);
                 }
+
+                //save the result back into temp
+                codeString += "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
 
                 break;
             }

@@ -53,7 +53,7 @@ public class BackpatchTable
         for(int i = 0;i < varCount;i++)
         {
             //add the base 16 representation of the value
-            backpatchValues.add(Integer.toString(currentValue, 16));
+            backpatchValues.add(Integer.toString(currentValue, 16).toUpperCase());
             //each variable only needs one byte, so just increase the value by 1
             currentValue++;
         }
