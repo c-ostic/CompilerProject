@@ -187,9 +187,9 @@ public class CodeGenerator
             codeString += printExpr + "AC " + backpatchTable.findOrCreate(TEMP_ID, 0);
 
         //set the X register
-        if(printNode.getExprType() == SymbolType.INT || printNode.getExprType() == SymbolType.BOOLEAN)
+        if(printNode.getExprType() == SymbolType.INT)
             codeString += "A2 01 ";
-        else if(printNode.getExprType() == SymbolType.STRING)
+        else if(printNode.getExprType() == SymbolType.STRING || printNode.getExprType() == SymbolType.BOOLEAN)
             codeString += "A2 02 ";
 
         //add the system call
@@ -228,9 +228,14 @@ public class CodeGenerator
             //var declaration of string (set to end of execution since it is guaranteed to be "00")
             codeString += "A9 FF ";
         }
+        else if(varDeclNode.getExprType() == SymbolType.BOOLEAN)
+        {
+            //var declaration of bool (set to "false" string in the heap)
+            codeString += "A9 " + addStringToHeap("false") + " ";
+        }
         else
         {
-            //var declaration of int or bool
+            //var declaration of int (set to 0)
             codeString += "A9 00 ";
         }
 
@@ -322,11 +327,11 @@ public class CodeGenerator
                     }
                     case BOOL_VAL:
                     {
-                        //add 01 for true, 00 for false
+                        //add the locations of strings "true" and "false" from the heap
                         if(token.getValue().equals("true"))
-                            codeString += "01 ";
+                            codeString += addStringToHeap("true") + " ";
                         else
-                            codeString += "00 ";
+                            codeString += addStringToHeap("false") + " ";
                         break;
                     }
                     case STRING:

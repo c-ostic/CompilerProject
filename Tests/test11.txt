@@ -1,11 +1,15 @@
 {
     int a
     string b
+    boolean c
     b = "hello world"
     a = 1 + 2 + 3
+    c = true
     print(5+4)
     print(a)
     print(b)
     print("hello world")
     print("yay")
+    print(false)
+    print(c)
 }$
