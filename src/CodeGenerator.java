@@ -96,7 +96,7 @@ public class CodeGenerator
         //start the heap off with true and false
         addStringToHeap("true");
         addStringToHeap("false");
- 
+
         //the first child of the root is the first block in the program
         //get the code in the form of a space delineated string and add a halt op code
         String codeString = generateBlock(ast.getRoot().getChild(0)) + "00 ";
@@ -331,7 +331,11 @@ public class CodeGenerator
                     }
                     case STRING:
                     {
-                        //TODO
+                        //the strings in the tokens are internally surrounded by quotes, so they need to be removed
+                        String quotedString = token.getValue();
+                        String fixedString = quotedString.substring(1, quotedString.length()-1);
+
+                        codeString += addStringToHeap(fixedString) + " ";
                         break;
                     }
                     case ID:
@@ -367,6 +371,8 @@ public class CodeGenerator
 
             //add the string to the hash map
             heapStrings.put(s, Integer.toString(heapStart, 16).toUpperCase());
+
+            stringLoc = heapStrings.get(s);
         }
 
         return stringLoc;
