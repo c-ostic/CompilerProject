@@ -71,4 +71,9 @@ public class BackpatchTable
         else
             return backpatchValues.get(index);
     }
+
+    public int size()
+    {
+        return varCount;
+    }
 }

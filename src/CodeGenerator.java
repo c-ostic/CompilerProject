@@ -1,3 +1,5 @@
+import java.util.HashMap;
+
 public class CodeGenerator
 {
     //set the executable size
@@ -6,6 +8,11 @@ public class CodeGenerator
     private String[] executable;
     private BackpatchTable backpatchTable;
     private int heapStart;
+    private int errors;
+
+    //maps a string to its starting location in the heap
+    private HashMap<String,String> heapStrings;
+
     private int programNum;
 
     public CodeGenerator()
@@ -24,7 +31,10 @@ public class CodeGenerator
         backpatchTable = new BackpatchTable();
 
         //set the start of the heap to the end of the executable
-        heapStart = EXE_SIZE - 1;
+        heapStart = EXE_SIZE;
+
+        //create an empty hashmap for the heap
+        heapStrings = new HashMap<String, String>();
     }
 
     public void tryCodeGeneration(SyntaxTree ast, int program, boolean hadPrevError)
@@ -39,24 +49,39 @@ public class CodeGenerator
         if(hadPrevError)
         {
             System.out.println("Code Generation for Program " + program + " skipped due to previous errors");
+            errors++;
             return;
         }
 
         System.out.println("INFO Code Generation - Generating code for program " + program);
         generateProgram(ast);
+
+        if(errors > 0)
+        {
+            System.out.println("ERROR Code Generation - Generation failed with " + errors + " errors");
+        }
+        else
+        {
+            System.out.println("INFO Code Generation - Generation succeeded with " + errors + " errors");
+        }
     }
 
     public void printExecutable()
     {
-        System.out.println("Executable:");
-
-        for(int i = 0;i < executable.length;i++)
+        if(errors == 0)
         {
-            System.out.print(executable[i] + " ");
+            System.out.println("Executable:");
 
-            if(i % 8 == 7)
-                System.out.println();
+            for (int i = 0; i < executable.length; i++)
+            {
+                System.out.print(executable[i] + " ");
+
+                if (i % 8 == 7)
+                    System.out.println();
+            }
         }
+        else
+            System.out.println("Executable for Program " + programNum + " skipped due to previous errors");
     }
 
     /*-------------------------------------------- Code Gen Methods --------------------------------------------------*/
@@ -68,6 +93,10 @@ public class CodeGenerator
         //start the backpatch off with a temp storage value
         backpatchTable.findOrCreate(TEMP_ID, 0);
 
+        //start the heap off with true and false
+        addStringToHeap("true");
+        addStringToHeap("false");
+ 
         //the first child of the root is the first block in the program
         //get the code in the form of a space delineated string and add a halt op code
         String codeString = generateBlock(ast.getRoot().getChild(0)) + "00 ";
@@ -75,18 +104,26 @@ public class CodeGenerator
         //turn the codeString into a usable array
         String[] codeArray = codeString.split(" ");
 
-        //backpatch the table
-        backpatchTable.backpatch(codeArray.length);
-
-        //iterate through the code array to put it into the executable, backpatching along the way
-        for(int i = 0;i < codeArray.length;i++)
+        //if the combined length of the code and the backpatch is less than the heapStart, then no collisions occur
+        if(codeArray.length + backpatchTable.size() < heapStart)
         {
-            if(codeArray[i].startsWith("T"))
-                executable[i] = backpatchTable.getBackpatchValue(codeArray[i]);
-            else
-                executable[i] = codeArray[i];
+            //backpatch the table
+            backpatchTable.backpatch(codeArray.length);
+
+            //iterate through the code array to put it into the executable, backpatching along the way
+            for (int i = 0; i < codeArray.length; i++)
+            {
+                if (codeArray[i].startsWith("T"))
+                    executable[i] = backpatchTable.getBackpatchValue(codeArray[i]);
+                else
+                    executable[i] = codeArray[i];
+            }
         }
-        //TODO: add check for crashing into heap
+        else
+        {
+            System.out.println("ERROR Code Generation - Stack collided with Heap, ran out of memory");
+            errors++;
+        }
     }
 
     private String generateBlock(SyntaxTreeNode blockNode)
@@ -309,5 +346,29 @@ public class CodeGenerator
         }
 
         return codeString;
+    }
+
+    private String addStringToHeap(String s)
+    {
+        String stringLoc = heapStrings.get(s);
+
+        //if the string is not already in the heap, add it
+        if(stringLoc == null)
+        {
+            //modify the heap start (-1 for the 00 at the end of the string)
+            heapStart = heapStart - s.length() - 1;
+
+            //if heap start ends up < 0, check and break out of the for loop
+            //let the error be handled at the end when the heap size is checked against the code and stack size
+
+            //add each character to the executable using ASCII char conversion and in base 16
+            for(int i = 0;i < s.length() && heapStart >= 0;i++)
+                executable[heapStart + i] = Integer.toString(s.charAt(i), 16).toUpperCase();
+
+            //add the string to the hash map
+            heapStrings.put(s, Integer.toString(heapStart, 16).toUpperCase());
+        }
+
+        return stringLoc;
     }
 }
