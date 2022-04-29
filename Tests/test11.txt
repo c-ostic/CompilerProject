@@ -3,8 +3,12 @@
     a = 5
     string b
     boolean c
-    c = (a != 2+2)
     print(c)
+
+    if false
+    {
+    print(a)
+    }
 
     /*b = "hello world"
     a = 1 + 2 + 3

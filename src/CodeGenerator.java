@@ -267,9 +267,30 @@ public class CodeGenerator
         return codeString;
     }
 
-    private String generateIf(SyntaxTreeNode ifNode)
+    private String generateIf(SyntaxTreeNode ifNode) throws CodeGenException
     {
         String codeString = "";
+
+        String condition = generateExpr(ifNode.getChild(0));
+        String block = generateBlock(ifNode.getChild(1));
+
+        //load the temp with the result of the condition
+        if(condition.length() == 3)
+            codeString += "A9 " + condition + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+        else if(condition.length() == 6)
+            codeString += "AD " + condition + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+        else
+            codeString += condition; //if the string is >6, then it's already stored in temp
+
+        //load x with true and compare with the value in temp
+        codeString += "A2 " + addStringToHeap("true");
+        codeString += "EC " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+        //jump over the code size of the block
+        String blockSize = String.format("%2s", Integer.toString(block.length()/3, 16)).replace(' ', '0').toUpperCase();
+        codeString += "D0 " + blockSize + " ";
+        codeString += block;
+
         return codeString;
     }
 
