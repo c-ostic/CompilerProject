@@ -1,8 +1,12 @@
 {
     int a
+    a = 5
     string b
     boolean c
-    b = "hello world"
+    c = (a != 2+2)
+    print(c)
+
+    /*b = "hello world"
     a = 1 + 2 + 3
     c = true
     print(5+4)
@@ -11,5 +15,5 @@
     print("hello world")
     print("yay")
     print(false)
-    print(c)
+    print(c)*/
 }$

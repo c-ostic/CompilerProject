@@ -1,5 +1,13 @@
 import java.util.HashMap;
 
+class CodeGenException extends Exception
+{
+    public CodeGenException(String message)
+    {
+        super(message);
+    }
+}
+
 public class CodeGenerator
 {
     //set the executable size
@@ -54,7 +62,16 @@ public class CodeGenerator
         }
 
         System.out.println("INFO Code Generation - Generating code for program " + program);
-        generateProgram(ast);
+
+        try
+        {
+            generateProgram(ast);
+        }
+        catch (CodeGenException e)
+        {
+            System.out.println(e.getMessage());
+            errors++;
+        }
 
         if(errors > 0)
         {
@@ -88,7 +105,7 @@ public class CodeGenerator
 
     private final String TEMP_ID = "temp";
 
-    private void generateProgram(SyntaxTree ast)
+    private void generateProgram(SyntaxTree ast) throws CodeGenException
     {
         //start the backpatch off with a temp storage value
         backpatchTable.findOrCreate(TEMP_ID, 0);
@@ -126,7 +143,7 @@ public class CodeGenerator
         }
     }
 
-    private String generateBlock(SyntaxTreeNode blockNode)
+    private String generateBlock(SyntaxTreeNode blockNode) throws CodeGenException
     {
         //generates the code in string form for easier concatenation of program lines
         String codeString = "";
@@ -172,7 +189,7 @@ public class CodeGenerator
         return codeString;
     }
 
-    private String generatePrint(SyntaxTreeNode printNode)
+    private String generatePrint(SyntaxTreeNode printNode) throws CodeGenException
     {
         String codeString = "";
 
@@ -198,7 +215,7 @@ public class CodeGenerator
         return codeString;
     }
 
-    private String generateAssignment(SyntaxTreeNode assignmentNode)
+    private String generateAssignment(SyntaxTreeNode assignmentNode) throws CodeGenException
     {
         String codeString = "";
 
@@ -217,7 +234,7 @@ public class CodeGenerator
         return codeString;
     }
 
-    private String generateVarDecl(SyntaxTreeNode varDeclNode)
+    private String generateVarDecl(SyntaxTreeNode varDeclNode) throws CodeGenException
     {
         String codeString = "";
 
@@ -231,7 +248,7 @@ public class CodeGenerator
         else if(varDeclNode.getExprType() == SymbolType.BOOLEAN)
         {
             //var declaration of bool (set to "false" string in the heap)
-            codeString += "A9 " + addStringToHeap("false") + " ";
+            codeString += "A9 " + addStringToHeap("false");
         }
         else
         {
@@ -265,9 +282,12 @@ public class CodeGenerator
     Length 6 - this means a memory address for an id (ex. "a")
     Length >6 - this means some kind of expression that saves its result in the TEMP_ID location
      */
-    private String generateExpr(SyntaxTreeNode exprNode)
+    private String generateExpr(SyntaxTreeNode exprNode) throws CodeGenException
     {
         String codeString = "";
+
+        //set a bool to true here so that the equality and inequality cases can share code except for one statement
+        boolean equality = true;
 
         switch(exprNode.getNodeType())
         {
@@ -303,12 +323,57 @@ public class CodeGenerator
 
                 break;
             }
-            case EQUALITY:
-            {
-                break;
-            }
             case INEQUALITY:
             {
+                //sets the equality bool to false, so this can share code with the equality case statement
+                equality = false;
+            }
+            case EQUALITY:
+            {
+                if(exprNode.getParent().getNodeType() == NodeType.EQUALITY ||
+                        exprNode.getParent().getNodeType() == NodeType.INEQUALITY)
+                    throw new CodeGenException("ERROR Code Generation - Nested Booleans not supported");
+
+                String firstHalf = generateExpr(exprNode.getChild(0));
+                String secondHalf = generateExpr(exprNode.getChild(1));
+
+                //load the x register with the result of the first expression
+                if(firstHalf.length() == 3)
+                    codeString += "A2 " + firstHalf;
+                else if(firstHalf.length() == 6)
+                    codeString += "AE " + firstHalf;
+                else
+                    codeString += firstHalf + "AE " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+                //load the temp with the result of the second expression
+                if(secondHalf.length() == 3)
+                    codeString += "A9 " + secondHalf + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                else if(secondHalf.length() == 6)
+                    codeString += "AD " + secondHalf + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                else
+                    codeString += secondHalf; //if the string is >6, then it's already stored in temp
+
+                //perform the comparison
+                codeString += "EC " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+                //add the appropriate true/false value into temp
+                if(equality)
+                {
+                    //starts with "false" in the acc. if not equal, jumps over the change to "true"
+                    codeString += "A9 " + addStringToHeap("false");
+                    codeString += "D0 02 ";
+                    codeString += "A9 " + addStringToHeap("true");
+                    codeString += "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                }
+                else
+                {
+                    //opposite of above
+                    codeString += "A9 " + addStringToHeap("true");
+                    codeString += "D0 02 ";
+                    codeString += "A9 " + addStringToHeap("false");
+                    codeString += "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                }
+
                 break;
             }
             case TERMINAL:
@@ -329,9 +394,9 @@ public class CodeGenerator
                     {
                         //add the locations of strings "true" and "false" from the heap
                         if(token.getValue().equals("true"))
-                            codeString += addStringToHeap("true") + " ";
+                            codeString += addStringToHeap("true");
                         else
-                            codeString += addStringToHeap("false") + " ";
+                            codeString += addStringToHeap("false");
                         break;
                     }
                     case STRING:
@@ -340,7 +405,7 @@ public class CodeGenerator
                         String quotedString = token.getValue();
                         String fixedString = quotedString.substring(1, quotedString.length()-1);
 
-                        codeString += addStringToHeap(fixedString) + " ";
+                        codeString += addStringToHeap(fixedString);
                         break;
                     }
                     case ID:
@@ -380,6 +445,6 @@ public class CodeGenerator
             stringLoc = heapStrings.get(s);
         }
 
-        return stringLoc;
+        return stringLoc + " ";
     }
 }
