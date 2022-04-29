@@ -261,9 +261,41 @@ public class CodeGenerator
         return codeString;
     }
 
-    private String generateWhile(SyntaxTreeNode whileNode)
+    private String generateWhile(SyntaxTreeNode whileNode) throws CodeGenException
     {
         String codeString = "";
+
+        String condition = generateExpr(whileNode.getChild(0));
+        String block = generateBlock(whileNode.getChild(1));
+
+        //load the temp with the result of the condition
+        if(condition.length() == 3)
+            codeString += "A9 " + condition + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+        else if(condition.length() == 6)
+            codeString += "AD " + condition + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+        else
+            codeString += condition; //if the string is >6, then it's already stored in temp
+
+        //load x with true and compare with the value in temp
+        codeString += "A2 " + addStringToHeap("true");
+        codeString += "EC " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+        //add unconditional jump at the end of the block
+        block += "A2 " + addStringToHeap("false"); //load x with false
+        block += "A9 " + addStringToHeap("true"); //load acc and temp with true
+        block += "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
+        block += "EC " + backpatchTable.findOrCreate(TEMP_ID, 0) + "D0 "; //compare and jump (leaving off end number)
+
+        //jump over the code size of the block (the plus 1 is account for not-yet-calculated backwards jump distance)
+        String blockSize = String.format("%2s", Integer.toString(block.length()/3 + 1, 16)).replace(' ', '0').toUpperCase();
+        codeString += "D0 " + blockSize + " ";
+        codeString += block;
+
+        //calculate size of entire while to add to the final jump backwards
+        int whileSize = codeString.length()/3 + 1;
+        String jump = String.format("%2s", Integer.toString(256-whileSize, 16)).replace(' ', '0').toUpperCase();
+        codeString += jump + " ";
+
         return codeString;
     }
 
