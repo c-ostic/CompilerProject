@@ -48,7 +48,9 @@ public class SemanticAnalyzer
         System.out.println("INFO Semantic Analysis - Analyzing program " + program);
 
         //create both the ast and scope tree/symbol table
+        System.out.println("INFO Semantic Analysis - Creating AST");
         createAST(cst.getRoot());
+        System.out.println("INFO Semantic Analysis - Analyzing Scope and Type");
         createScopeTree();
         scopeTree.printWarnings();
 
@@ -398,6 +400,8 @@ public class SemanticAnalyzer
                 {
                     SymbolType exprType = getExprType(child.getChild(0));
 
+                    System.out.println("DEBUG Semantic Analysis - Printing type " + exprType);
+
                     //a print statement can print any type except UNKNOWN
                     if(exprType == SymbolType.UNKNOWN)
                     {
@@ -514,6 +518,8 @@ public class SemanticAnalyzer
 
                 //get the type of the right side of the operator
                 SymbolType secondType = getExprType(expr.getChild(1));
+
+                System.out.println("DEBUG Semantic Analysis - Comparing " + firstType + " to " + secondType);
 
                 //if the two types are not the same, then print an error
                 if(firstType != secondType)

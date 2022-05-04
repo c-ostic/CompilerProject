@@ -113,6 +113,8 @@ public class CodeGenerator
 
     private void generateProgram(SyntaxTree ast) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating Program Code");
+
         //start the backpatch off with a temp storage value
         backpatchTable.findOrCreate(TEMP_ID, 0);
 
@@ -133,6 +135,8 @@ public class CodeGenerator
         //if the combined length of the code and the backpatch is less than the heapStart, then no collisions occur
         if(codeArray.length + backpatchTable.size() < heapStart)
         {
+            System.out.println("DEBUG Code Gen - Backpatching variables");
+
             //backpatch the table
             backpatchTable.backpatch(codeArray.length);
 
@@ -154,6 +158,8 @@ public class CodeGenerator
 
     private String generateBlock(SyntaxTreeNode blockNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating Block Code");
+
         //generates the code in string form for easier concatenation of program lines
         String codeString = "";
 
@@ -200,6 +206,8 @@ public class CodeGenerator
 
     private String generatePrint(SyntaxTreeNode printNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating Print Code");
+
         String codeString = "";
 
         String printExpr = generateExpr(printNode.getChild(0));
@@ -226,6 +234,8 @@ public class CodeGenerator
 
     private String generateAssignment(SyntaxTreeNode assignmentNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating Assignment Code");
+
         String codeString = "";
 
         String idCode = generateExpr(assignmentNode.getChild(0));
@@ -245,6 +255,8 @@ public class CodeGenerator
 
     private String generateVarDecl(SyntaxTreeNode varDeclNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating Var Decl Code");
+
         String codeString = "";
 
         String idCode = generateExpr(varDeclNode.getChild(1));
@@ -272,6 +284,8 @@ public class CodeGenerator
 
     private String generateWhile(SyntaxTreeNode whileNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating While Statement Code");
+
         String codeString = "";
 
         String condition = generateExpr(whileNode.getChild(0));
@@ -310,6 +324,8 @@ public class CodeGenerator
 
     private String generateIf(SyntaxTreeNode ifNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating If Statement Code");
+
         String codeString = "";
 
         String condition = generateExpr(ifNode.getChild(0));
@@ -346,6 +362,8 @@ public class CodeGenerator
      */
     private String generateExpr(SyntaxTreeNode exprNode) throws CodeGenException
     {
+        System.out.println("DEBUG Code Gen - Generating Expression Code");
+
         String codeString = "";
 
         //set a bool to true here so that the equality and inequality cases can share code except for one statement
@@ -500,6 +518,8 @@ public class CodeGenerator
         //if the string is not already in the heap, add it
         if(stringLoc == null)
         {
+            System.out.println("DEBUG Code Gen - Adding \"" + s + "\" to the heap");
+
             //modify the heap start (-1 for the 00 at the end of the string)
             heapStart = heapStart - s.length() - 1;
 

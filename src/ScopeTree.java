@@ -82,10 +82,10 @@ public class ScopeTree
                 if(!attributes.isUsed())
                 {
                     if(attributes.isInitialized())
-                        System.out.println("WARN Semantic Analysis - id [" + id + "] declared at " + attributes.getDeclareLocation() +
+                        System.out.println("WARN Semantic Analysis - id [ " + id + " ] declared at " + attributes.getDeclareLocation() +
                                 " and initialized but not used");
                     else
-                        System.out.println("WARN Semantic Analysis - id [" + id + "] declared at " + attributes.getDeclareLocation() +
+                        System.out.println("WARN Semantic Analysis - id [ " + id + " ] declared at " + attributes.getDeclareLocation() +
                                 " but not initialized or used");
                     warnings++;
                 }
@@ -144,10 +144,13 @@ public class ScopeTree
     //uses the symbolType passed in as its type after checking it doesn't already exist
     public void declareId(Token id, SymbolType symbolType)
     {
+        System.out.println("DEBUG Semantic Analysis - Trying to declare " + id);
+
         //try to find the symbol in the current scope (not parents)
         //if not found, then declare the identifier in the scope
         if(current.getSymbol(id.getValue(), false) == null)
         {
+            System.out.println("DEBUG Semantic Analysis - Declaring " + id + " in scope " + current.getScope() + " as type " + symbolType);
             current.addIdentifier(id.getValue(), symbolType, id.getLocation(), current.getScope());
             id.setScope(current.getScope());
         }
@@ -163,6 +166,8 @@ public class ScopeTree
     //used to initialize an existing id to a certain type (symbolType)
     public void initializeId(Token id, SymbolType symbolType)
     {
+        System.out.println("DEBUG Semantic Analysis - Trying to initialize " + id);
+
         SymbolAttributes idInfo = current.getSymbol(id.getValue(), true);
 
         //if the symbol was found, continue to check type
@@ -171,6 +176,7 @@ public class ScopeTree
             //if the symbol type matches, then there is no error, and id is successfully initialized
             if(idInfo.getSymbolType() == symbolType)
             {
+                System.out.println("DEBUG Semantic Analysis - Initializing " + id + " in scope " + idInfo.getScope() + " to type " + symbolType);
                 idInfo.setInitialized(true);
                 id.setScope(idInfo.getScope());
             }
@@ -193,6 +199,8 @@ public class ScopeTree
     //used to use an already existing id and get its type
     public SymbolType useId(Token id)
     {
+        System.out.println("DEBUG Semantic Analysis - Trying to use " + id);
+
         SymbolAttributes idInfo = current.getSymbol(id.getValue(), true);
 
         //if the symbol was found, check if it was initialized
@@ -204,6 +212,8 @@ public class ScopeTree
                 System.out.println("WARN Semantic Analysis - " + id + " used but not initialized");
                 warnings++;
             }
+
+            System.out.println("DEBUG Semantic Analysis - Using " + id + " in scope " + idInfo.getScope());
 
             idInfo.setUsed(true);
             id.setScope(idInfo.getScope());

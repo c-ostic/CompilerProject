@@ -35,6 +35,8 @@ public class BackpatchTable
                 return placeholders.get(i);
         }
 
+        System.out.println("DEBUG Code Gen - Creating variable " + id + " in scope " + scope);
+
         //if not found, create a new entry in the table (new value in each list)
         ids.add(id);
         scopes.add(scope);
