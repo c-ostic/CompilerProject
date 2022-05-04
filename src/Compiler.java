@@ -20,6 +20,8 @@ public class Compiler
             SemanticAnalyzer analyzer = new SemanticAnalyzer();
             SyntaxTree ast;
 
+            CodeGenerator generator  = new CodeGenerator();
+
             while (lexer.hasNextProgram())
             {
                 tokens = lexer.getNextProgram();
@@ -31,10 +33,14 @@ public class Compiler
                 ast = analyzer.tryAnalyzeProgram(cst, lexer.getProgramCount(), lexer.hasError() | parser.hasError());
                 System.out.println();
 
+                generator.tryCodeGeneration(ast, lexer.getProgramCount(), lexer.hasError() | parser.hasError() | analyzer.hasError());
+                System.out.println();
+
                 //print CST, AST, and SymbolTable
                 parser.printCST();
                 analyzer.printAST();
                 analyzer.printSymbolTable();
+                generator.printExecutable();
                 System.out.println();
             }
         }

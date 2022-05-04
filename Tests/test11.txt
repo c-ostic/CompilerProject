@@ -1,0 +1,93 @@
+/*more valid programs*/
+/*Program 1: prints -> 56false567896falsetrue hello world */
+{
+    int a
+    a = 5
+    string b
+    boolean c
+    print(a)
+    print(1 + a)
+
+    if (a == 5)
+    {
+        print(c)
+    }
+
+    while (a != 9)
+    {
+        print(a)
+        a = 1 + a
+    }
+
+    b = " hello world "
+    a = 1 + 2 + 3
+    c = true
+    print(5+4)
+    print(a)
+    print(false)
+    print(c)
+    print(b)
+}$
+
+/*Program 2: from powerpoint, prints -> 2alan */
+{
+    int a
+    a = 1
+    {
+        int a
+        a = 2
+        print(a)
+    }
+    string b
+    b = "alan"
+    if (a == 1) {
+        print(b)
+    }
+}$
+
+/* Program 3 lots of scopes, prints -> hello b is false 5*/
+{
+    int a
+    a = 5
+    {
+        boolean b
+        string a
+        {
+            a = "hello"
+            boolean b
+            {
+                b = true
+            }
+        }
+        print(a)
+        if (b != true)
+        {
+            print(" b is false ")
+        }
+    }
+    print(a)
+}$
+
+/* Program 4 multiple nested boolean expressions: prints yesdone*/
+{
+    int a
+    a = 5
+    boolean b
+    b = false
+    if ((a == 5) != (b == true))
+    {
+        print("yes")
+    }
+    print("done")
+}$
+
+/* Program 5 too many large strings */
+{
+    print("never gonna give you up")
+    print("never gonna let you down")
+    print("never gonna run around or desert you")
+    print("never gonna make you cry")
+    print("never gonna say goodbye")
+    print("never gonna tell a lie and hurt you")
+    print("until this program becomes too large")
+}$

@@ -50,6 +50,9 @@ public class SyntaxTreeNode
     private final List<SyntaxTreeNode> children;
     private final Location location;
 
+    //used specifically for print statement and var decl nodes to save what type they are printing/declaring
+    private SymbolType exprType;
+
     //Constructor for branch nodes that have a non-terminal type and no token
     //Instead of a token, they are given a location of the first token within the nonterminal
     public SyntaxTreeNode(NodeType nonTerminal, Location startLocation)
@@ -113,6 +116,16 @@ public class SyntaxTreeNode
     public Location getLocation()
     {
         return location;
+    }
+
+    public SymbolType getExprType()
+    {
+        return exprType;
+    }
+
+    public void setExprType(SymbolType type)
+    {
+        exprType = type;
     }
 
     //the node is a leaf node iff it has a token instead of just a label

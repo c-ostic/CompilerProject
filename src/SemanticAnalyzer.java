@@ -23,6 +23,11 @@ public class SemanticAnalyzer
         previousError = false;
     }
 
+    public boolean hasError()
+    {
+        return errors > 0;
+    }
+
     public SyntaxTree tryAnalyzeProgram(SyntaxTree cst, int program, boolean hadPrevError)
     {
         //reset all the necessary values
@@ -43,7 +48,9 @@ public class SemanticAnalyzer
         System.out.println("INFO Semantic Analysis - Analyzing program " + program);
 
         //create both the ast and scope tree/symbol table
+        System.out.println("INFO Semantic Analysis - Creating AST");
         createAST(cst.getRoot());
+        System.out.println("INFO Semantic Analysis - Analyzing Scope and Type");
         createScopeTree();
         scopeTree.printWarnings();
 
@@ -391,12 +398,19 @@ public class SemanticAnalyzer
             {
                 case PRINT_STATEMENT:
                 {
+                    SymbolType exprType = getExprType(child.getChild(0));
+
+                    System.out.println("DEBUG Semantic Analysis - Printing type " + exprType);
+
                     //a print statement can print any type except UNKNOWN
-                    if(getExprType(child.getChild(0)) == SymbolType.UNKNOWN)
+                    if(exprType == SymbolType.UNKNOWN)
                     {
                         System.out.println("ERROR Semantic Analysis - Cannot print UNKNOWN type " + child.getChild(0).getToken());
                         errors++;
                     }
+
+                    //set the printType for this print statement
+                    child.setExprType(exprType);
 
                     break;
                 }
@@ -421,16 +435,19 @@ public class SemanticAnalyzer
                         case "int":
                         {
                             varType = SymbolType.INT;
+                            child.setExprType(SymbolType.INT);
                             break;
                         }
                         case "string":
                         {
                             varType = SymbolType.STRING;
+                            child.setExprType(SymbolType.STRING);
                             break;
                         }
                         case "boolean":
                         {
                             varType = SymbolType.BOOLEAN;
+                            child.setExprType(SymbolType.BOOLEAN);
                             break;
                         }
                         default:
@@ -501,6 +518,8 @@ public class SemanticAnalyzer
 
                 //get the type of the right side of the operator
                 SymbolType secondType = getExprType(expr.getChild(1));
+
+                System.out.println("DEBUG Semantic Analysis - Comparing " + firstType + " to " + secondType);
 
                 //if the two types are not the same, then print an error
                 if(firstType != secondType)

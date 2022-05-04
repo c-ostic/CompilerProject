@@ -50,11 +50,17 @@ public class Token
     private final String value;
     private final Location location;
 
+    //some tokens (specifically ids) may be assigned a scope for the purposes of distinguishing them in code gen
+    private int scope;
+
     public Token(TokenType tokenType, String tokenValue, int lineNumber, int colNumber)
     {
         type = tokenType;
         value = tokenValue;
         location = new Location(lineNumber, colNumber);
+
+        //default scope to 0
+        scope = 0;
     }
 
     //getters and setters
@@ -81,6 +87,16 @@ public class Token
     public Location getLocation()
     {
         return location;
+    }
+
+    public void setScope(int scope)
+    {
+        this.scope = scope;
+    }
+
+    public int getScope()
+    {
+        return scope;
     }
 
     //toString shows all bits of information in the Token
