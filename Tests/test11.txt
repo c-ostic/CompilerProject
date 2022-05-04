@@ -68,7 +68,7 @@
     print(a)
 }$
 
-/* Program 4 multiple nested boolean expressions: nested expressions not supported right now*/
+/* Program 4 multiple nested boolean expressions: prints yesdone*/
 {
     int a
     a = 5
@@ -78,6 +78,7 @@
     {
         print("yes")
     }
+    print("done")
 }$
 
 /* Program 5 too many large strings */

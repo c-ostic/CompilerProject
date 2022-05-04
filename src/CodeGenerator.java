@@ -18,6 +18,9 @@ public class CodeGenerator
     private int heapStart;
     private int errors;
 
+    // variable to handle boolean hell and the saving of many temp variables
+    private int boolExprCount;
+
     //maps a string to its starting location in the heap
     private HashMap<String,String> heapStrings;
 
@@ -43,6 +46,9 @@ public class CodeGenerator
 
         //create an empty hashmap for the heap
         heapStrings = new HashMap<String, String>();
+
+        //reset the number of errors
+        errors = 0;
     }
 
     public void tryCodeGeneration(SyntaxTree ast, int program, boolean hadPrevError)
@@ -113,6 +119,9 @@ public class CodeGenerator
         //start the heap off with true and false
         addStringToHeap("true");
         addStringToHeap("false");
+
+        //start the boolExprCount at 0
+        boolExprCount = 0;
 
         //the first child of the root is the first block in the program
         //get the code in the form of a space delineated string and add a halt op code
@@ -383,20 +392,24 @@ public class CodeGenerator
             }
             case EQUALITY:
             {
-                if(exprNode.getParent().getNodeType() == NodeType.EQUALITY ||
-                        exprNode.getParent().getNodeType() == NodeType.INEQUALITY)
-                    throw new CodeGenException("ERROR Code Generation - Nested Booleans not supported");
+                boolExprCount++; //increase the count for this iteration of bool expression
+                //if(exprNode.getParent().getNodeType() == NodeType.EQUALITY ||
+                        //exprNode.getParent().getNodeType() == NodeType.INEQUALITY)
+                    //throw new CodeGenException("ERROR Code Generation - Nested Booleans not supported");
 
                 String firstHalf = generateExpr(exprNode.getChild(0));
                 String secondHalf = generateExpr(exprNode.getChild(1));
 
-                //load the x register with the result of the first expression
+                //load accumulator with the result of the first expression
                 if(firstHalf.length() == 3)
-                    codeString += "A2 " + firstHalf;
+                    codeString += "A9 " + firstHalf;
                 else if(firstHalf.length() == 6)
-                    codeString += "AE " + firstHalf;
+                    codeString += "AD " + firstHalf;
                 else
-                    codeString += firstHalf + "AE " + backpatchTable.findOrCreate(TEMP_ID, 0);
+                    codeString += firstHalf + "AD " + backpatchTable.findOrCreate(TEMP_ID, 0);
+
+                //save the value into a temp value based upon how many bool expressions have been nested
+                codeString += "8D " + backpatchTable.findOrCreate("bool" + boolExprCount, 0); //its a temp, so no need to worry about scope
 
                 //load the temp with the result of the second expression
                 if(secondHalf.length() == 3)
@@ -405,6 +418,9 @@ public class CodeGenerator
                     codeString += "AD " + secondHalf + "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
                 else
                     codeString += secondHalf; //if the string is >6, then it's already stored in temp
+
+                //load x with the temp from the first value
+                codeString += "AE " + backpatchTable.findOrCreate("bool" + boolExprCount, 0);
 
                 //perform the comparison
                 codeString += "EC " + backpatchTable.findOrCreate(TEMP_ID, 0);
@@ -426,6 +442,8 @@ public class CodeGenerator
                     codeString += "A9 " + addStringToHeap("false");
                     codeString += "8D " + backpatchTable.findOrCreate(TEMP_ID, 0);
                 }
+
+                boolExprCount--; //decrease the count for this iteration of bool expression
 
                 break;
             }
