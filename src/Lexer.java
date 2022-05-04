@@ -135,7 +135,7 @@ public class Lexer
         } //end while
 
         //print any applicable warnings and errors
-        if(currProgram.size() != 0 && currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
+        if(currProgram.size() == 0 || currProgram.get(currProgram.size()-1).getType() != TokenType.EOP)
         {
             System.out.println("WARN Lexer - Program ended without '$', adding it for you");
             currProgram.add(new Token(TokenType.EOP, "$", currLine, currCol));
